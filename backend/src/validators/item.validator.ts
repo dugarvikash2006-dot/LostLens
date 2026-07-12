@@ -14,7 +14,9 @@ export const CATEGORY_VALUES = [
   'OTHER',
 ] as const
 
-export const createLostReportSchema = z.object({
+// Shared by both LOST and FOUND reports — only the "when" field's name
+// differs (dateLost vs dateFound), matching each endpoint's API contract.
+const baseReportFields = {
   title: z
     .string()
     .trim()
@@ -34,11 +36,20 @@ export const createLostReportSchema = z.object({
     .trim()
     .min(2, 'Location is required.')
     .max(200, 'Location must be at most 200 characters long.'),
+}
 
-  // Accepts an ISO date string (or anything Date can parse) and coerces
-  // it to a real Date — Zod rejects anything that doesn't produce a
-  // valid date.
+// Accepts an ISO date string (or anything Date can parse) and coerces it
+// to a real Date — Zod rejects anything that doesn't produce a valid date.
+
+export const createLostReportSchema = z.object({
+  ...baseReportFields,
   dateLost: z.coerce.date('dateLost must be a valid date.'),
 })
 
+export const createFoundReportSchema = z.object({
+  ...baseReportFields,
+  dateFound: z.coerce.date('dateFound must be a valid date.'),
+})
+
 export type CreateLostReportInput = z.infer<typeof createLostReportSchema>
+export type CreateFoundReportInput = z.infer<typeof createFoundReportSchema>

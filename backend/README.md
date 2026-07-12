@@ -1,12 +1,13 @@
 # LostLens Backend
 
-Phase 3A: Lost Item Reporting (create + list + view own reports), layered
-on top of Phase 2C authentication, Phase 2B PostgreSQL + Prisma ORM 7, and
-the Phase 2A Express + TypeScript foundation.
+Phase 3B: Found Item Reporting, layered on top of Phase 3A Lost Item
+Reporting, Phase 2C authentication, Phase 2B PostgreSQL + Prisma ORM 7,
+and the Phase 2A Express + TypeScript foundation.
 
-This phase adds `POST /api/items/lost`, `GET /api/items/mine`, and
-`GET /api/items/:id` — LOST reports only. No FOUND reports, image upload,
-AI matching, claims, or notifications yet. Those arrive in later phases.
+This phase adds `POST /api/items/found`, `GET /api/items/found/mine`, and
+`GET /api/items/found/:id` — reusing the same `ItemReport` model as LOST
+reports (`reportType: FOUND` instead of `LOST`). No image upload, AI
+matching, claims, or notifications yet. Those arrive in later phases.
 
 ## Tech Stack
 
@@ -33,7 +34,7 @@ backend/
 │   │   ├── health.controller.ts       # GET /api/health
 │   │   ├── db-health.controller.ts    # GET /api/health/db
 │   │   ├── auth.controller.ts         # POST /signup, /login, GET /me
-│   │   └── item.controller.ts         # POST /items/lost, GET /items/mine, GET /items/:id
+│   │   └── item.controller.ts         # LOST + FOUND report endpoints
 │   ├── generated/
 │   │   └── prisma/      # Generated Prisma Client source (git-ignored,
 │   │                    # created by `npm run prisma:generate`)
@@ -44,17 +45,18 @@ backend/
 │   ├── routes/
 │   │   ├── health.routes.ts
 │   │   ├── auth.routes.ts
-│   │   └── item.routes.ts
+│   │   └── item.routes.ts          # /lost, /mine, /found, /found/mine, /:id, /found/:id
 │   ├── services/
 │   │   ├── auth.service.ts   # signup/login/getCurrentUser business logic
-│   │   └── item.service.ts   # create/list/get-by-id lost report logic
+│   │   └── item.service.ts   # shared create/list/get-by-id core, used by
+│   │                          # both LOST and FOUND wrapper functions
 │   ├── utils/
 │   │   ├── app-error.ts   # Typed error with status code + safe message
 │   │   ├── jwt.ts         # Sign/verify JWT (single source of truth)
 │   │   └── password.ts    # bcrypt hash/compare
 │   ├── validators/
 │   │   ├── auth.validator.ts   # Zod schemas for signup/login
-│   │   └── item.validator.ts   # Zod schema for lost-report creation
+│   │   └── item.validator.ts   # Zod schemas for LOST + FOUND report creation
 │   ├── types/
 │   │   └── express.d.ts    # Adds req.user via declaration merging
 │   ├── app.ts
@@ -444,31 +446,79 @@ Returns only the authenticated user's own LOST reports, newest first:
 
 ### `GET /api/items/:id`
 
-Returns a single report — but only if the authenticated user owns it.
+Returns a single LOST report — but only if the authenticated user owns it.
 
-- Doesn't exist → `404 Not Found`
-- Exists, but belongs to someone else → `403 Forbidden`
+- Doesn't exist, or exists but is a FOUND report → `404 Not Found`
+- Exists as LOST, but belongs to someone else → `403 Forbidden`
 - Belongs to the caller → `200 OK` with `{ success: true, data: { report } }`
+
+## Found Item Reporting
+
+Mirrors Lost Item Reporting exactly, using the same `ItemReport` model
+with `reportType: FOUND` instead of `LOST`. All three endpoints require
+authentication the same way.
+
+### `POST /api/items/found`
+
+Request body — identical to the LOST version except `dateFound` instead
+of `dateLost`:
+
+```json
+{
+  "title": "Black Umbrella",
+  "description": "Plain black umbrella found near the entrance.",
+  "category": "OTHER",
+  "location": "Main Entrance",
+  "dateFound": "2026-07-09"
+}
+```
+
+Success — `201 Created`, same report shape as LOST but with
+`"reportType": "FOUND"` and `"message": "Found report created successfully"`.
+
+Invalid input returns `400 Bad Request` with the same field-level error
+shape (fields: `title`, `description`, `category`, `location`,
+`dateFound`).
+
+### `GET /api/items/found/mine`
+
+Returns only the authenticated user's own FOUND reports, newest first —
+same response shape as `GET /api/items/mine`.
+
+### `GET /api/items/found/:id`
+
+Returns a single FOUND report — same ownership rules as the LOST version
+(404 if missing/wrong type, 403 if not the owner, 200 if it belongs to the
+caller).
+
+### Implementation note
+
+`item.service.ts` has one internal `createReport`/`getMyReports`/
+`getReportById` core (parameterized by `reportType`), with thin
+LOST/FOUND-named functions on top of it — this is a refactor from Phase
+3A's LOST-only version, done because the create/list/get-by-id logic was
+identical apart from which `reportType` to filter/store by. The exported
+function names and behavior for LOST are unchanged. `item.validator.ts`
+similarly shares its title/description/category/location field
+definitions between the LOST and FOUND Zod schemas.
 
 ## Data Model Overview
 
 - **User** — supports authentication (Phase 2C: signup/login/JWT); has
   many item reports, claims, and notifications.
 - **ItemReport** — a single LOST or FOUND report (one model for both).
-  Phase 3A only creates `reportType: LOST` rows via the API above; the
-  model itself already supported this — no schema change was needed.
+  Phase 3A added LOST reports; Phase 3B added FOUND reports using the same
+  model and the same API shape — no schema change was needed for either.
 - **Match** — a candidate pairing between one LOST and one FOUND report,
   with nullable similarity score fields for a future AI matching phase.
 - **Claim** — an ownership-verification attempt against a Match.
 - **Notification** — an in-app notification for a User.
 
-No schema changes were needed for Phase 3A — the existing `ItemReport`
-model already had every field lost-reporting requires (`userId`,
-`reportType`, `itemName`, `category`, `description`, `location`,
-`eventDate`, `status`, timestamps), so no new migration was created.
+No schema changes were needed for Phase 3B — `reportType: FOUND` was
+already a valid value of the existing `ReportType` enum, and every other
+field is shared with LOST reports. No new migration was created.
 
-Item update/delete, FOUND reports, image upload, scoring,
-claim-verification, and notification-delivery logic are still not
-implemented — only the schema and the LOST-report slice of the API needed
-to support them later.
-
+Item update/delete, image upload, scoring, claim-verification, and
+notification-delivery logic are still not implemented — only the schema
+and the plain-CRUD slice of the LOST/FOUND API needed to support them
+later.

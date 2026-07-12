@@ -2,24 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getMyLostReports } from '../api/item.api'
 import { ApiError } from '../api/client'
+import ReportCard from '../components/ReportCard'
 import type { ItemReport } from '../types/item'
 import './Reports.css'
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: 'Open',
-  POTENTIAL_MATCH: 'Potential Match',
-  CLAIM_PENDING: 'Claim Pending',
-  RETURNED: 'Returned',
-  CLOSED: 'Closed',
-}
-
-function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
 
 function MyLostReports() {
   const [reports, setReports] = useState<ItemReport[] | null>(null)
@@ -84,18 +69,12 @@ function MyLostReports() {
         {!isLoading && !error && reports && reports.length > 0 && (
           <div className="reports-grid">
             {reports.map((report) => (
-              <Link to={`/items/${report.id}`} className="report-card card" key={report.id}>
-                <div className="report-card-header">
-                  <span className={`badge badge-status badge-status-${report.status}`}>
-                    {STATUS_LABELS[report.status] ?? report.status}
-                  </span>
-                </div>
-                <h3 className="report-card-title">{report.itemName}</h3>
-                <p className="report-card-meta">{report.category}</p>
-                <p className="report-card-meta">{report.location}</p>
-                <p className="report-card-meta">Lost {formatDate(report.eventDate)}</p>
-                <p className="report-card-meta">Reported {formatDate(report.createdAt)}</p>
-              </Link>
+              <ReportCard
+                key={report.id}
+                report={report}
+                to={`/items/${report.id}`}
+                dateLabel="Lost"
+              />
             ))}
           </div>
         )}

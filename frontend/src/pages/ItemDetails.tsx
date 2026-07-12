@@ -2,24 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getLostReportById } from '../api/item.api'
 import { ApiError } from '../api/client'
+import ReportDetails from '../components/ReportDetails'
 import type { ItemReport } from '../types/item'
 import './Reports.css'
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: 'Open',
-  POTENTIAL_MATCH: 'Potential Match',
-  CLAIM_PENDING: 'Claim Pending',
-  RETURNED: 'Returned',
-  CLOSED: 'Closed',
-}
-
-function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
 
 function ItemDetails() {
   const { id } = useParams<{ id: string }>()
@@ -89,46 +74,12 @@ function ItemDetails() {
   }
 
   return (
-    <section className="report-details-section section">
-      <div className="container">
-        <div className="report-details-card card">
-          <div className="report-details-header">
-            <h1>{report.itemName}</h1>
-            <span className={`badge badge-status badge-status-${report.status}`}>
-              {STATUS_LABELS[report.status] ?? report.status}
-            </span>
-          </div>
-
-          <dl className="report-details-grid">
-            <div className="report-details-field">
-              <dt>Category</dt>
-              <dd>{report.category}</dd>
-            </div>
-            <div className="report-details-field">
-              <dt>Location</dt>
-              <dd>{report.location}</dd>
-            </div>
-            <div className="report-details-field">
-              <dt>Date Lost</dt>
-              <dd>{formatDate(report.eventDate)}</dd>
-            </div>
-            <div className="report-details-field">
-              <dt>Reported On</dt>
-              <dd>{formatDate(report.createdAt)}</dd>
-            </div>
-          </dl>
-
-          <dl className="report-details-description">
-            <dt>Description</dt>
-            <dd>{report.description}</dd>
-          </dl>
-
-          <Link to="/my-reports" className="btn btn-secondary report-details-back">
-            Back to My Reports
-          </Link>
-        </div>
-      </div>
-    </section>
+    <ReportDetails
+      report={report}
+      dateLabel="Date Lost"
+      backTo="/my-reports"
+      backLabel="Back to My Reports"
+    />
   )
 }
 

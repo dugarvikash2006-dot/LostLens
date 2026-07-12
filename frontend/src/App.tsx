@@ -8,6 +8,9 @@ import Signup from './pages/Signup'
 import CreateLostReport from './pages/CreateLostReport'
 import MyLostReports from './pages/MyLostReports'
 import ItemDetails from './pages/ItemDetails'
+import CreateFoundReport from './pages/CreateFoundReport'
+import MyFoundReports from './pages/MyFoundReports'
+import FoundReportDetails from './pages/FoundReportDetails'
 import NotFound from './pages/NotFound'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/useAuth'
@@ -57,6 +60,30 @@ function AppShell() {
             element={
               <ProtectedRoute>
                 <ItemDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-found"
+            element={
+              <ProtectedRoute>
+                <CreateFoundReport />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-found"
+            element={
+              <ProtectedRoute>
+                <MyFoundReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/found/:id"
+            element={
+              <ProtectedRoute>
+                <FoundReportDetails />
               </ProtectedRoute>
             }
           />

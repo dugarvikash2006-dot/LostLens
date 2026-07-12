@@ -27,9 +27,9 @@ export const CATEGORY_OPTIONS: Category[] = [
 
 export type ReportStatus = 'OPEN' | 'POTENTIAL_MATCH' | 'CLAIM_PENDING' | 'RETURNED' | 'CLOSED'
 
-// Matches the ItemReport Prisma model as returned by the API — this phase
-// only ever creates reportType: 'LOST', but the shape covers the whole
-// model since GET endpoints return it as-is.
+// Matches the ItemReport Prisma model as returned by the API. Covers both
+// LOST (Phase 3A) and FOUND (Phase 3B) reports — they're the same
+// underlying model and shape, just filtered by reportType.
 export interface ItemReport {
   id: string
   userId: string
@@ -58,13 +58,28 @@ export interface CreateLostReportRequest {
   dateLost: string
 }
 
-export interface CreateLostReportResponse {
+export interface CreateFoundReportRequest {
+  title: string
+  description: string
+  category: Category
+  location: string
+  dateFound: string
+}
+
+// LOST and FOUND creation responses share the same shape — only the
+// request field name differs (dateLost vs dateFound), matching the
+// backend. Kept as named aliases rather than one generic type so call
+// sites stay self-documenting about which flow they're in.
+export interface CreateReportResponse {
   success: true
   message: string
   data: {
     report: ItemReport
   }
 }
+
+export type CreateLostReportResponse = CreateReportResponse
+export type CreateFoundReportResponse = CreateReportResponse
 
 export interface MyReportsResponse {
   success: true

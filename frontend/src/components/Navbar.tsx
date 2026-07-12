@@ -51,10 +51,16 @@ function Navbar() {
           {isAuthenticated && (
             <>
               <NavLink to="/create-lost" className="navbar-link">
-                Create Report
+                Create Lost Report
+              </NavLink>
+              <NavLink to="/create-found" className="navbar-link">
+                Create Found Report
               </NavLink>
               <NavLink to="/my-reports" className="navbar-link">
-                My Reports
+                My Lost Reports
+              </NavLink>
+              <NavLink to="/my-found" className="navbar-link">
+                My Found Reports
               </NavLink>
             </>
           )}

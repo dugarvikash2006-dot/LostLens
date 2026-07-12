@@ -1,7 +1,7 @@
 # LostLens Frontend
 
 React + TypeScript + Vite frontend for LostLens, an intelligent lost-and-found
-platform. This covers Phase 1 (UI) through Phase 3A (Lost Item Reporting).
+platform. This covers Phase 1 (UI) through Phase 3B (Found Item Reporting).
 
 ## Tech Stack
 
@@ -113,7 +113,7 @@ disable or preserve here.
 
 ## Lost Item Reporting (Phase 3A)
 
-Two new protected pages, backed by `src/api/item.api.ts`:
+Three protected pages, backed by `src/api/item.api.ts`:
 
 - `/create-lost` (`CreateLostReport.tsx`) — form for Title, Description,
   Category (select), Location, Date Lost. Calls
@@ -125,20 +125,63 @@ Two new protected pages, backed by `src/api/item.api.ts`:
   full report. If the report belongs to someone else, the backend returns
   403 and the page shows that message rather than the report.
 
-All three routes are wrapped in `ProtectedRoute` — visiting them while
-logged out redirects to `/login`. The Navbar shows "Create Report" and
-"My Reports" links only when authenticated, next to the existing
+All routes are wrapped in `ProtectedRoute` — visiting them while logged
+out redirects to `/login`. The Navbar shows "Create Lost Report" and
+"My Lost Reports" links only when authenticated, next to the existing
 Home/Browse Items/How It Works links.
 
 Types for all of this live in `src/types/item.ts` (`ItemReport`,
 `CreateLostReportRequest`, `MyReportsResponse`, etc.), matched exactly to
-the real Phase 3A backend response shapes — no reshaping happens between
-what the backend returns and what these pages render.
+the real backend response shapes — no reshaping happens between what the
+backend returns and what these pages render.
 
-This phase is LOST reports only: no FOUND reports, no image upload, no
-edit/delete, no matching. The category list
+The category list
 (`ELECTRONICS`/`ACCESSORIES`/`BAGS`/`DOCUMENTS`/`KEYS`/`CLOTHING`/`BOOKS`/`OTHER`)
 is fixed to match the backend's enum.
+
+## Found Item Reporting (Phase 3B)
+
+Mirrors Lost Item Reporting, reusing shared components rather than
+duplicating whole pages:
+
+- `/create-found` (`CreateFoundReport.tsx`) — same fields as the lost
+  form, labeled "Date Found". Calls `POST /api/items/found`; on success
+  navigates to `/my-found`.
+- `/my-found` (`MyFoundReports.tsx`) — calls `GET /api/items/found/mine`,
+  same card layout as My Lost Reports. Each card links to `/found/:id`.
+- `/found/:id` (`FoundReportDetails.tsx`) — calls
+  `GET /api/items/found/:id`. Same 403/404 handling as the lost details
+  page.
+
+The Navbar additionally shows "Create Found Report" and
+"My Found Reports" when authenticated, alongside the lost-report links.
+
+### What got shared (refactor from Phase 3A)
+
+Phase 3A's create/list/detail pages for LOST were fully self-contained,
+which would have meant near-duplicate code for FOUND. Instead:
+
+- **`src/components/ReportForm.tsx`** — the actual Title/Description/
+  Category/Location/Date form, field state, validation, loading state,
+  and error display. `CreateLostReport.tsx` and `CreateFoundReport.tsx`
+  are now just a few lines each: they pass in labels and an `onSubmit`
+  that calls the right API function and navigates to the right place.
+- **`src/components/ReportCard.tsx`** — the summary card used in both
+  "My Reports" grids (`dateLabel` prop controls whether it reads
+  "Lost ..." or "Found ...").
+- **`src/components/ReportDetails.tsx`** — the full-detail layout used by
+  both detail pages (`dateLabel`/`backTo`/`backLabel` props vary the
+  wording and back-link).
+- **`src/utils/formatDate.ts`** — the shared date-formatting helper both
+  of the above use.
+- **Backend-facing types** in `src/types/item.ts` — `ItemReport` already
+  covered both report types from Phase 3A; this phase added
+  `CreateFoundReportRequest`/`Response` as thin siblings of the LOST
+  versions rather than duplicating the whole `ItemReport` shape.
+
+`CreateLostReport.tsx`, `MyLostReports.tsx`, and `ItemDetails.tsx` still
+exist as their own files with unchanged URLs and behavior — only their
+internal implementation now delegates to the shared components above.
 
 ## Manual Testing Sequence
 
@@ -160,23 +203,27 @@ and this app running on `http://localhost:5173`:
    "Invalid email or password." message.
 7. Stop the backend and try logging in → should show a network-error
    message (not a blank page or `[object Object]`).
-8. While logged out, visit `/create-lost` or `/my-reports` directly →
-   redirected to `/login`.
-9. Log in, go to "Create Report", submit a valid lost report → redirected
+8. While logged out, visit `/create-lost`, `/my-reports`, `/create-found`,
+   or `/my-found` directly → all redirect to `/login`.
+9. Log in, go to "Create Lost Report", submit a valid report → redirected
    to `/my-reports` and the new report appears at the top.
-10. Submit the form with empty fields → inline validation errors, no
+10. Go to "Create Found Report", submit a valid report → redirected to
+    `/my-found` and the new report appears at the top.
+11. Submit either form with empty fields → inline validation errors, no
     request sent.
-11. On "My Reports", click a report card → `/items/:id` shows the full
-    details.
-12. Log in as a *different* user and manually visit another user's
-    `/items/:id` URL → shows a "you do not have permission" message
-    instead of the report.
-13. Refresh `/my-reports` → the list reloads from the backend (not stale
-    local state).
+12. On "My Lost Reports", click a report card → `/items/:id` shows the
+    full details. Same for "My Found Reports" → `/found/:id`.
+13. Log in as a *different* user and manually visit another user's
+    `/items/:id` or `/found/:id` URL → shows a "you do not have
+    permission" message instead of the report.
+14. Refresh `/my-reports` and `/my-found` → both reload from the backend
+    (not stale local state).
 
 ## Regression Notes
 
 Existing pages, routes, and visual design from Phase 1 are unchanged:
-Home, 404, and the overall look of Login/Signup. `npm run build` and
-`npm run lint` both pass.
+Home, 404, and the overall look of Login/Signup. Phase 3A's lost-report
+pages keep the same URLs and behavior after the shared-component
+refactor. `npm run build` and `npm run lint` both pass.
+
 
