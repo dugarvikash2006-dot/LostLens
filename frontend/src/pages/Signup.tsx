@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/useAuth'
+import { ApiError } from '../api/client'
 import './Auth.css'
 
 interface SignupErrors {
@@ -13,13 +15,19 @@ interface SignupErrors {
 const MIN_PASSWORD_LENGTH = 8
 
 function Signup() {
+  const { signup } = useAuth()
+  const navigate = useNavigate()
+
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errors, setErrors] = useState<SignupErrors>({})
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Basic, non-duplicative frontend checks — the backend remains the
+  // source of truth for the real password policy and email uniqueness.
   const validate = (): SignupErrors => {
     const nextErrors: SignupErrors = {}
 
@@ -48,14 +56,36 @@ function Signup() {
     return nextErrors
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (isSubmitting) return
+
+    setFormError(null)
     const nextErrors = validate()
     setErrors(nextErrors)
 
-    if (Object.keys(nextErrors).length === 0) {
-      // Phase 1 is frontend-only: no real account is created here.
-      setIsSubmitted(true)
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await signup({ fullName: fullName.trim(), email, password })
+      // Auth state updates immediately via context; no dashboard exists
+      // yet, so return to the home page.
+      navigate('/')
+    } catch (error) {
+      if (error instanceof ApiError) {
+        // Covers duplicate email (409) and backend validation errors
+        // (400) alike — the backend's message is safe to show directly.
+        setFormError(error.message)
+      } else {
+        setFormError('Something went wrong. Please try again.')
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -68,10 +98,9 @@ function Signup() {
             <p>Join LostLens to report and track lost or found items.</p>
           </div>
 
-          {isSubmitted && (
-            <div className="auth-success" role="status">
-              Account created! (This is a frontend demo — no account was
-              actually created.)
+          {formError && (
+            <div className="auth-error" role="alert">
+              {formError}
             </div>
           )}
 
@@ -86,6 +115,8 @@ function Signup() {
                 aria-invalid={Boolean(errors.fullName)}
                 aria-describedby={errors.fullName ? 'signup-name-error' : undefined}
                 placeholder="Jane Doe"
+                autoComplete="name"
+                disabled={isSubmitting}
               />
               {errors.fullName && (
                 <p className="form-error" id="signup-name-error">
@@ -104,6 +135,8 @@ function Signup() {
                 aria-invalid={Boolean(errors.email)}
                 aria-describedby={errors.email ? 'signup-email-error' : undefined}
                 placeholder="you@example.com"
+                autoComplete="email"
+                disabled={isSubmitting}
               />
               {errors.email && (
                 <p className="form-error" id="signup-email-error">
@@ -122,6 +155,8 @@ function Signup() {
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={errors.password ? 'signup-password-error' : undefined}
                 placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+                autoComplete="new-password"
+                disabled={isSubmitting}
               />
               {errors.password && (
                 <p className="form-error" id="signup-password-error">
@@ -142,6 +177,8 @@ function Signup() {
                   errors.confirmPassword ? 'signup-confirm-password-error' : undefined
                 }
                 placeholder="Re-enter your password"
+                autoComplete="new-password"
+                disabled={isSubmitting}
               />
               {errors.confirmPassword && (
                 <p className="form-error" id="signup-confirm-password-error">
@@ -150,8 +187,8 @@ function Signup() {
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary btn-block">
-              Create Account
+            <button type="submit" className="btn btn-primary btn-block" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating account…' : 'Create Account'}
             </button>
           </form>
 

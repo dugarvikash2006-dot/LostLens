@@ -1,14 +1,12 @@
 # LostLens Backend
 
-Phase 2C: JWT authentication (signup, login, current-user), layered on top
-of the Phase 2B PostgreSQL + Prisma ORM 7 foundation and the Phase 2A
-Express + TypeScript foundation.
+Phase 3A: Lost Item Reporting (create + list + view own reports), layered
+on top of Phase 2C authentication, Phase 2B PostgreSQL + Prisma ORM 7, and
+the Phase 2A Express + TypeScript foundation.
 
-This phase adds signup/login/me endpoints, bcrypt password hashing, JWT
-issuance and verification, request validation, and centralized error
-handling — no item APIs, image upload, AI matching, claims, or
-notification delivery yet. Those arrive in later phases. The frontend is
-not connected to these endpoints yet — that's the next phase.
+This phase adds `POST /api/items/lost`, `GET /api/items/mine`, and
+`GET /api/items/:id` — LOST reports only. No FOUND reports, image upload,
+AI matching, claims, or notifications yet. Those arrive in later phases.
 
 ## Tech Stack
 
@@ -34,7 +32,8 @@ backend/
 │   ├── controllers/
 │   │   ├── health.controller.ts       # GET /api/health
 │   │   ├── db-health.controller.ts    # GET /api/health/db
-│   │   └── auth.controller.ts         # POST /signup, /login, GET /me
+│   │   ├── auth.controller.ts         # POST /signup, /login, GET /me
+│   │   └── item.controller.ts         # POST /items/lost, GET /items/mine, GET /items/:id
 │   ├── generated/
 │   │   └── prisma/      # Generated Prisma Client source (git-ignored,
 │   │                    # created by `npm run prisma:generate`)
@@ -44,15 +43,18 @@ backend/
 │   │   └── error.middleware.ts     # Centralized error handler
 │   ├── routes/
 │   │   ├── health.routes.ts
-│   │   └── auth.routes.ts
+│   │   ├── auth.routes.ts
+│   │   └── item.routes.ts
 │   ├── services/
-│   │   └── auth.service.ts   # signup/login/getCurrentUser business logic
+│   │   ├── auth.service.ts   # signup/login/getCurrentUser business logic
+│   │   └── item.service.ts   # create/list/get-by-id lost report logic
 │   ├── utils/
 │   │   ├── app-error.ts   # Typed error with status code + safe message
 │   │   ├── jwt.ts         # Sign/verify JWT (single source of truth)
 │   │   └── password.ts    # bcrypt hash/compare
 │   ├── validators/
-│   │   └── auth.validator.ts   # Zod schemas for signup/login
+│   │   ├── auth.validator.ts   # Zod schemas for signup/login
+│   │   └── item.validator.ts   # Zod schema for lost-report creation
 │   ├── types/
 │   │   └── express.d.ts    # Adds req.user via declaration merging
 │   ├── app.ts
@@ -368,21 +370,105 @@ is **not** a valid bcrypt hash. Those seeded users **cannot log in** through
 `/api/auth/login` — this is intentional, not a bug. To get a real,
 login-capable account, use `POST /api/auth/signup`.
 
+## Lost Item Reporting
+
+Three endpoints, mounted under `/api/items`. **All require
+authentication** (`Authorization: Bearer <token>`) — every route in
+`item.routes.ts` goes through `requireAuth` first. This phase only covers
+LOST reports; there's no way to create a FOUND report yet.
+
+The owner of a report is always taken from the verified token
+(`req.user.id`) — never from anything in the request body.
+
+### `POST /api/items/lost`
+
+Request body:
+
+```json
+{
+  "title": "Blue Water Bottle",
+  "description": "Stainless steel bottle with a dented cap.",
+  "category": "OTHER",
+  "location": "Sports Complex",
+  "dateLost": "2026-07-02"
+}
+```
+
+`category` must be one of: `ELECTRONICS`, `ACCESSORIES`, `BAGS`,
+`DOCUMENTS`, `KEYS`, `CLOTHING`, `BOOKS`, `OTHER`. `dateLost` accepts any
+string `Date` can parse (an ISO date like `2026-07-02` is simplest).
+
+Success — `201 Created`:
+
+```json
+{
+  "success": true,
+  "message": "Lost report created successfully",
+  "data": {
+    "report": {
+      "id": "...",
+      "userId": "...",
+      "reportType": "LOST",
+      "itemName": "Blue Water Bottle",
+      "category": "OTHER",
+      "description": "Stainless steel bottle with a dented cap.",
+      "location": "Sports Complex",
+      "eventDate": "2026-07-02T00:00:00.000Z",
+      "status": "OPEN",
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  }
+}
+```
+
+(A few nullable fields the model shares with FOUND reports — `brand`,
+`color`, `distinctiveFeatures`, `approximateTime`, `locationDetails`,
+`imageUrl` — are also present, all `null` for now.)
+
+Invalid input returns `400 Bad Request` with a field-level error list,
+same shape as auth validation errors.
+
+### `GET /api/items/mine`
+
+Returns only the authenticated user's own LOST reports, newest first:
+
+```json
+{
+  "success": true,
+  "data": {
+    "reports": [ /* same report shape as above */ ]
+  }
+}
+```
+
+### `GET /api/items/:id`
+
+Returns a single report — but only if the authenticated user owns it.
+
+- Doesn't exist → `404 Not Found`
+- Exists, but belongs to someone else → `403 Forbidden`
+- Belongs to the caller → `200 OK` with `{ success: true, data: { report } }`
+
 ## Data Model Overview
 
 - **User** — supports authentication (Phase 2C: signup/login/JWT); has
   many item reports, claims, and notifications.
 - **ItemReport** — a single LOST or FOUND report (one model for both).
+  Phase 3A only creates `reportType: LOST` rows via the API above; the
+  model itself already supported this — no schema change was needed.
 - **Match** — a candidate pairing between one LOST and one FOUND report,
   with nullable similarity score fields for a future AI matching phase.
 - **Claim** — an ownership-verification attempt against a Match.
 - **Notification** — an in-app notification for a User.
 
-No schema changes were needed for Phase 2C — the `User` model already had
-every field authentication requires (`id`, `fullName`, `email` (unique),
-`passwordHash`, `role`, `createdAt`, `updatedAt`), so no new migration was
-created.
+No schema changes were needed for Phase 3A — the existing `ItemReport`
+model already had every field lost-reporting requires (`userId`,
+`reportType`, `itemName`, `category`, `description`, `location`,
+`eventDate`, `status`, timestamps), so no new migration was created.
 
-Item CRUD, image upload, scoring, claim-verification, and
-notification-delivery logic are still not implemented — only the schema
-and now authentication needed to support them later.
+Item update/delete, FOUND reports, image upload, scoring,
+claim-verification, and notification-delivery logic are still not
+implemented — only the schema and the LOST-report slice of the API needed
+to support them later.
+

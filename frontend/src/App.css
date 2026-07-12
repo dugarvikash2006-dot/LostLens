@@ -7,3 +7,13 @@
 .app-main {
   flex: 1;
 }
+
+.app-boot-loading,
+.route-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}

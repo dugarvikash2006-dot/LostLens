@@ -63,6 +63,17 @@
   gap: var(--space-3);
 }
 
+.navbar-user {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.navbar-user-mobile {
+  padding: var(--space-2) 0;
+}
+
 .navbar-mobile-actions {
   display: none;
 }

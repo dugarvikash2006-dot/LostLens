@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/useAuth'
+import { ApiError } from '../api/client'
 import './Auth.css'
 
 interface LoginErrors {
@@ -9,11 +11,15 @@ interface LoginErrors {
 }
 
 function Login() {
+  const { login } = useAuth()
+  const navigate = useNavigate()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [errors, setErrors] = useState<LoginErrors>({})
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const validate = (): LoginErrors => {
     const nextErrors: LoginErrors = {}
@@ -31,14 +37,37 @@ function Login() {
     return nextErrors
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    // Guards against double-submits from an eager double-click.
+    if (isSubmitting) return
+
+    setFormError(null)
     const nextErrors = validate()
     setErrors(nextErrors)
 
-    if (Object.keys(nextErrors).length === 0) {
-      // Phase 1 is frontend-only: no real authentication happens here.
-      setIsSubmitted(true)
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await login({ email, password })
+      // Auth state updates immediately via context; no dashboard exists
+      // yet, so return to the home page.
+      navigate('/')
+    } catch (error) {
+      if (error instanceof ApiError) {
+        // Backend messages (e.g. "Invalid email or password.") are safe,
+        // human-readable plain text — rendered as-is, never as HTML.
+        setFormError(error.message)
+      } else {
+        setFormError('Something went wrong. Please try again.')
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -51,10 +80,9 @@ function Login() {
             <p>Welcome back. Enter your details to continue.</p>
           </div>
 
-          {isSubmitted && (
-            <div className="auth-success" role="status">
-              You&apos;re logged in! (This is a frontend demo — no account was
-              actually accessed.)
+          {formError && (
+            <div className="auth-error" role="alert">
+              {formError}
             </div>
           )}
 
@@ -69,6 +97,8 @@ function Login() {
                 aria-invalid={Boolean(errors.email)}
                 aria-describedby={errors.email ? 'login-email-error' : undefined}
                 placeholder="you@example.com"
+                autoComplete="email"
+                disabled={isSubmitting}
               />
               {errors.email && (
                 <p className="form-error" id="login-email-error">
@@ -87,6 +117,8 @@ function Login() {
                 aria-invalid={Boolean(errors.password)}
                 aria-describedby={errors.password ? 'login-password-error' : undefined}
                 placeholder="Enter your password"
+                autoComplete="current-password"
+                disabled={isSubmitting}
               />
               {errors.password && (
                 <p className="form-error" id="login-password-error">
@@ -101,6 +133,7 @@ function Login() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(event) => setRememberMe(event.target.checked)}
+                  disabled={isSubmitting}
                 />
                 Remember me
               </label>
@@ -109,8 +142,8 @@ function Login() {
               </a>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-block">
-              Login
+            <button type="submit" className="btn btn-primary btn-block" disabled={isSubmitting}>
+              {isSubmitting ? 'Signing in…' : 'Login'}
             </button>
           </form>
 

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/useAuth'
 import './Navbar.css'
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
 
   // Any navigation (link click) inside the mobile menu should close it.
   const closeMenu = () => setIsMenuOpen(false)
@@ -23,6 +25,14 @@ function Navbar() {
     }
   }
 
+  const handleLogout = () => {
+    closeMenu()
+    logout()
+    navigate('/')
+  }
+
+  const firstName = user?.fullName.trim().split(/\s+/)[0] ?? ''
+
   return (
     <header className="navbar">
       <div className="navbar-inner container">
@@ -38,6 +48,16 @@ function Navbar() {
           <NavLink to="/" end className="navbar-link">
             Home
           </NavLink>
+          {isAuthenticated && (
+            <>
+              <NavLink to="/create-lost" className="navbar-link">
+                Create Report
+              </NavLink>
+              <NavLink to="/my-reports" className="navbar-link">
+                My Reports
+              </NavLink>
+            </>
+          )}
           <span
             className="navbar-link navbar-link-disabled"
             title="Browse Items is coming soon"
@@ -50,22 +70,50 @@ function Navbar() {
 
           {/* Auth actions live inside the collapsible menu on mobile only */}
           <div className="navbar-mobile-actions">
-            <Link to="/login" className="btn btn-secondary btn-block">
-              Login
-            </Link>
-            <Link to="/signup" className="btn btn-primary btn-block">
-              Sign Up
-            </Link>
+            {isAuthenticated && user ? (
+              <>
+                <span className="navbar-user navbar-user-mobile">Hi, {firstName}</span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-block"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-secondary btn-block">
+                  Login
+                </Link>
+                <Link to="/signup" className="btn btn-primary btn-block">
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </nav>
 
         <div className="navbar-actions">
-          <Link to="/login" className="btn btn-secondary">
-            Login
-          </Link>
-          <Link to="/signup" className="btn btn-primary">
-            Sign Up
-          </Link>
+          {isAuthenticated && user ? (
+            <>
+              <span className="navbar-user" title={user.fullName}>
+                Hi, {firstName}
+              </span>
+              <button type="button" className="btn btn-secondary" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-secondary">
+                Login
+              </Link>
+              <Link to="/signup" className="btn btn-primary">
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         <button
