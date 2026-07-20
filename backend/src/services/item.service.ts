@@ -2,10 +2,10 @@ import { prisma } from '../config/prisma'
 import { AppError } from '../utils/app-error'
 import type { CreateLostReportInput, CreateFoundReportInput } from '../validators/item.validator'
 
-// This phase only creates LOST and FOUND reports directly (no images,
-// matching, claims, or notifications yet) — the underlying ItemReport
-// model already supports all of that, but these services intentionally
-// only exercise the plain create/list/get-by-id slice of it.
+// This phase creates LOST and FOUND reports, optionally with images
+// (Phase 3C) — no matching, claims, or notifications yet. The underlying
+// ItemReport model already supports all of that, but these services
+// intentionally only exercise the plain create/list/get-by-id slice of it.
 //
 // LOST and FOUND share identical create/list/get-by-id logic and differ
 // only in the `reportType` they filter/store by, so that logic lives once
@@ -21,13 +21,24 @@ type ReportType = 'LOST' | 'FOUND'
 // still lines up with what Prisma's generated Category type expects.
 type CategoryValue = CreateLostReportInput['category']
 
+interface ImageReference {
+  imageUrl: string
+  publicId: string
+}
+
 interface CreateReportFields {
   title: string
   description: string
   category: CategoryValue
   location: string
   eventDate: Date
+  images?: ImageReference[]
 }
+
+// Every read of a report includes its images — callers always get the
+// full picture (including an empty array) rather than having to
+// remember a separate include.
+const REPORT_INCLUDE = { images: true } as const
 
 async function createReport(ownerId: string, reportType: ReportType, input: CreateReportFields) {
   return prisma.itemReport.create({
@@ -40,7 +51,17 @@ async function createReport(ownerId: string, reportType: ReportType, input: Crea
       location: input.location,
       eventDate: input.eventDate,
       // status defaults to OPEN at the schema level
+      images:
+        input.images && input.images.length > 0
+          ? {
+              create: input.images.map((image) => ({
+                imageUrl: image.imageUrl,
+                publicId: image.publicId,
+              })),
+            }
+          : undefined,
     },
+    include: REPORT_INCLUDE,
   })
 }
 
@@ -53,12 +74,14 @@ async function getMyReports(ownerId: string, reportType: ReportType) {
     orderBy: {
       createdAt: 'desc',
     },
+    include: REPORT_INCLUDE,
   })
 }
 
 async function getReportById(reportId: string, requestingUserId: string, reportType: ReportType) {
   const report = await prisma.itemReport.findUnique({
     where: { id: reportId },
+    include: REPORT_INCLUDE,
   })
 
   if (!report || report.reportType !== reportType) {
@@ -81,6 +104,7 @@ export function createLostReport(ownerId: string, input: CreateLostReportInput) 
     category: input.category,
     location: input.location,
     eventDate: input.dateLost,
+    images: input.images,
   })
 }
 
@@ -101,6 +125,7 @@ export function createFoundReport(ownerId: string, input: CreateFoundReportInput
     category: input.category,
     location: input.location,
     eventDate: input.dateFound,
+    images: input.images,
   })
 }
 

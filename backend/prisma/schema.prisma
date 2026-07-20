@@ -130,6 +130,13 @@ model ItemReport {
   lostMatches  Match[] @relation("LostItemMatches")
   foundMatches Match[] @relation("FoundItemMatches")
 
+  // Phase 3C: 0-5 Cloudinary-hosted images per report. The legacy
+  // `imageUrl` field above is left untouched (still nullable, unused
+  // going forward) rather than removed, to avoid an unnecessary
+  // destructive migration — this additive relation is the smallest
+  // change that supports multiple images per report.
+  images ReportImage[]
+
   @@index([userId])
   @@index([reportType])
   @@index([category])
@@ -138,6 +145,26 @@ model ItemReport {
   @@index([location])
   @@index([createdAt])
   @@map("item_reports")
+}
+
+// ------------------------------------------------------------------------
+// ReportImage — Cloudinary-hosted images attached to an ItemReport
+// ------------------------------------------------------------------------
+
+model ReportImage {
+  id       String     @id @default(cuid())
+  reportId String
+  report   ItemReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  // Only the Cloudinary URL and public ID are stored — never binary
+  // image data.
+  imageUrl String
+  publicId String
+
+  createdAt DateTime @default(now())
+
+  @@index([reportId])
+  @@map("report_images")
 }
 
 // ------------------------------------------------------------------------

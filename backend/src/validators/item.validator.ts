@@ -36,6 +36,19 @@ const baseReportFields = {
     .trim()
     .min(2, 'Location is required.')
     .max(200, 'Location must be at most 200 characters long.'),
+
+  // References to images already uploaded via POST /api/items/upload —
+  // this endpoint never accepts raw file data itself. Optional: a report
+  // can have zero images.
+  images: z
+    .array(
+      z.object({
+        imageUrl: z.url('Each image must have a valid URL.'),
+        publicId: z.string().min(1, 'Each image is missing its publicId.'),
+      }),
+    )
+    .max(5, 'You can attach at most 5 images.')
+    .optional(),
 }
 
 // Accepts an ISO date string (or anything Date can parse) and coerces it
