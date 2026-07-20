@@ -13,6 +13,7 @@ function CreateLostReport() {
       category: values.category,
       location: values.location,
       dateLost: values.date,
+      images: values.images,
     })
     navigate('/my-reports')
   }

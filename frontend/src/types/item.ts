@@ -27,6 +27,30 @@ export const CATEGORY_OPTIONS: Category[] = [
 
 export type ReportStatus = 'OPEN' | 'POTENTIAL_MATCH' | 'CLAIM_PENDING' | 'RETURNED' | 'CLOSED'
 
+// Mirrors backend/src/middleware/upload.middleware.ts — used for
+// client-side pre-checks only; the backend remains authoritative.
+export const MAX_REPORT_IMAGES = 5
+export const MAX_IMAGE_SIZE_MB = 5
+export const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+// A single Cloudinary-hosted image attached to a report (Phase 3C).
+export interface ReportImage {
+  id: string
+  reportId: string
+  imageUrl: string
+  publicId: string
+  createdAt: string
+}
+
+// A bare image reference — what POST /api/items/upload returns, and what
+// gets sent back to the backend when creating a report. Distinct from
+// ReportImage (the persisted, DB-backed record with id/reportId/createdAt)
+// since a reference exists before any report does.
+export interface ImageReference {
+  imageUrl: string
+  publicId: string
+}
+
 // Matches the ItemReport Prisma model as returned by the API. Covers both
 // LOST (Phase 3A) and FOUND (Phase 3B) reports — they're the same
 // underlying model and shape, just filtered by reportType.
@@ -48,6 +72,7 @@ export interface ItemReport {
   status: ReportStatus
   createdAt: string
   updatedAt: string
+  images: ReportImage[]
 }
 
 export interface CreateLostReportRequest {
@@ -56,6 +81,7 @@ export interface CreateLostReportRequest {
   category: Category
   location: string
   dateLost: string
+  images?: ImageReference[]
 }
 
 export interface CreateFoundReportRequest {
@@ -64,7 +90,16 @@ export interface CreateFoundReportRequest {
   category: Category
   location: string
   dateFound: string
+  images?: ImageReference[]
 }
+
+export interface UploadImagesResponse {
+  success: true
+  data: {
+    images: ImageReference[]
+  }
+}
+
 
 // LOST and FOUND creation responses share the same shape — only the
 // request field name differs (dateLost vs dateFound), matching the

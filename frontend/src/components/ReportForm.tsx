@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../api/client'
 import { CATEGORY_OPTIONS } from '../types/item'
-import type { Category } from '../types/item'
+import type { Category, ImageReference } from '../types/item'
+import ImageUploader from './ImageUploader'
 import '../pages/Auth.css'
 import '../pages/Reports.css'
 
@@ -12,6 +13,7 @@ export interface ReportFormValues {
   category: Category
   location: string
   date: string
+  images: ImageReference[]
 }
 
 interface ReportFormErrors {
@@ -62,10 +64,18 @@ function ReportForm({
   const [category, setCategory] = useState<Category | ''>('')
   const [location, setLocation] = useState('')
   const [date, setDate] = useState('')
+  const [images, setImages] = useState<ImageReference[]>([])
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
 
   const [errors, setErrors] = useState<ReportFormErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Submitting is blocked both while the form's own request is in
+  // flight and while an image upload is still running — the latter
+  // prevents submitting a report before its images have finished
+  // uploading (and prevents starting a second upload mid-submit).
+  const isBusy = isSubmitting || isUploadingImages
 
   // Light frontend checks only — the backend remains the source of truth
   // for exact length/format rules.
@@ -94,7 +104,7 @@ function ReportForm({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (isSubmitting) return
+    if (isBusy) return
 
     setFormError(null)
     const nextErrors = validate()
@@ -113,6 +123,7 @@ function ReportForm({
         category,
         location: location.trim(),
         date,
+        images,
       })
     } catch (error) {
       if (error instanceof ApiError) {
@@ -151,7 +162,7 @@ function ReportForm({
                 aria-invalid={Boolean(errors.title)}
                 aria-describedby={errors.title ? 'report-title-error' : undefined}
                 placeholder="e.g. Blue Water Bottle"
-                disabled={isSubmitting}
+                disabled={isBusy}
               />
               {errors.title && (
                 <p className="form-error" id="report-title-error">
@@ -169,7 +180,7 @@ function ReportForm({
                 aria-invalid={Boolean(errors.description)}
                 aria-describedby={errors.description ? 'report-description-error' : undefined}
                 placeholder="Describe the item, any distinctive marks, etc."
-                disabled={isSubmitting}
+                disabled={isBusy}
               />
               {errors.description && (
                 <p className="form-error" id="report-description-error">
@@ -186,7 +197,7 @@ function ReportForm({
                 onChange={(event) => setCategory(event.target.value as Category)}
                 aria-invalid={Boolean(errors.category)}
                 aria-describedby={errors.category ? 'report-category-error' : undefined}
-                disabled={isSubmitting}
+                disabled={isBusy}
               >
                 <option value="">Select a category…</option>
                 {CATEGORY_OPTIONS.map((option) => (
@@ -212,7 +223,7 @@ function ReportForm({
                 aria-invalid={Boolean(errors.location)}
                 aria-describedby={errors.location ? 'report-location-error' : undefined}
                 placeholder="e.g. Library, 2nd Floor"
-                disabled={isSubmitting}
+                disabled={isBusy}
               />
               {errors.location && (
                 <p className="form-error" id="report-location-error">
@@ -230,7 +241,7 @@ function ReportForm({
                 onChange={(event) => setDate(event.target.value)}
                 aria-invalid={Boolean(errors.date)}
                 aria-describedby={errors.date ? 'report-date-error' : undefined}
-                disabled={isSubmitting}
+                disabled={isBusy}
               />
               {errors.date && (
                 <p className="form-error" id="report-date-error">
@@ -239,8 +250,15 @@ function ReportForm({
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary btn-block" disabled={isSubmitting}>
-              {isSubmitting ? submittingLabel : submitLabel}
+            <ImageUploader
+              images={images}
+              onChange={setImages}
+              disabled={isBusy}
+              onUploadingChange={setIsUploadingImages}
+            />
+
+            <button type="submit" className="btn btn-primary btn-block" disabled={isBusy}>
+              {isSubmitting ? submittingLabel : isUploadingImages ? 'Uploading photos…' : submitLabel}
             </button>
           </form>
         </div>

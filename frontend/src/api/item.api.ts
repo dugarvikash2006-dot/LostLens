@@ -7,12 +7,34 @@ import type {
   CreateFoundReportResponse,
   MyReportsResponse,
   ReportDetailsResponse,
+  UploadImagesResponse,
 } from '../types/item'
 
 // All endpoints require authentication. These pages only ever render
 // behind ProtectedRoute, so a token should always be present — but if
 // it's somehow missing, the backend will correctly reject the request
 // with 401 rather than this silently sending nothing.
+
+// ---------------- Image upload (Phase 3C) ----------------
+
+/**
+ * Uploads image files to the backend (which forwards them to Cloudinary)
+ * and returns their { imageUrl, publicId } references. Call this first,
+ * then pass the returned references into createLostReport/createFoundReport
+ * — reports are never created with raw file data directly.
+ */
+export function uploadImages(files: File[]): Promise<UploadImagesResponse> {
+  const formData = new FormData()
+  for (const file of files) {
+    formData.append('images', file)
+  }
+
+  return apiRequest<UploadImagesResponse>('/api/items/upload', {
+    method: 'POST',
+    body: formData,
+    token: getStoredToken(),
+  })
+}
 
 // ---------------- LOST reports (Phase 3A — unchanged) ----------------
 

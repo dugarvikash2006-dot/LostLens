@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { ItemReport } from '../types/item'
 import { formatReportDate } from '../utils/formatDate'
+import ImageGallery from './ImageGallery'
 import '../pages/Reports.css'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -60,6 +61,8 @@ function ReportDetails({ report, dateLabel, backTo, backLabel }: ReportDetailsPr
             <dt>Description</dt>
             <dd>{report.description}</dd>
           </dl>
+
+          <ImageGallery images={report.images} />
 
           <Link to={backTo} className="btn btn-secondary report-details-back">
             {backLabel}

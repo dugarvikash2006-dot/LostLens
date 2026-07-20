@@ -48,6 +48,9 @@ function parseBackendErrorShape(payload: unknown): BackendErrorShape {
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  /** A plain object is sent as JSON; a FormData instance is sent as-is
+   *  (multipart/form-data, e.g. for file uploads) — the browser sets the
+   *  correct Content-Type with boundary automatically in that case. */
   body?: unknown
   /** Attached as `Authorization: Bearer <token>` when provided. */
   token?: string | null
@@ -56,8 +59,12 @@ interface RequestOptions {
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, token } = options
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+  const isFormData = body instanceof FormData
+
+  const headers: Record<string, string> = {}
+
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json'
   }
 
   if (token) {
@@ -70,7 +77,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
     })
   } catch {
     // fetch() only throws for network-level failures, never for HTTP

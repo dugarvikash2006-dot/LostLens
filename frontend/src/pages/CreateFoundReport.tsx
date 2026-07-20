@@ -13,6 +13,7 @@ function CreateFoundReport() {
       category: values.category,
       location: values.location,
       dateFound: values.date,
+      images: values.images,
     })
     navigate('/my-found')
   }
