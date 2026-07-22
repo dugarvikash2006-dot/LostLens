@@ -75,11 +75,12 @@ function ItemDetails() {
 
   return (
     <ReportDetails
-      report={report}
-      dateLabel="Date Lost"
-      backTo="/my-reports"
-      backLabel="Back to My Reports"
-    />
+  report={report}
+  matches={[]}
+  dateLabel="Date Lost"
+  backTo="/my-lost"
+  backLabel="Back to My Lost Reports"
+/>
   )
 }
 

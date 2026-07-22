@@ -19,6 +19,7 @@ interface ReportDetailsProps {
   /** Where "Back to My Reports" / "Back to My Found Reports" goes */
   backTo: string
   backLabel: string
+  matches: any[]
 }
 
 /**
@@ -26,7 +27,7 @@ interface ReportDetailsProps {
  * pages — identical layout, just different wording for the date field
  * and the back-link.
  */
-function ReportDetails({ report, dateLabel, backTo, backLabel }: ReportDetailsProps) {
+function ReportDetails({ report, dateLabel, backTo, backLabel, matches, }: ReportDetailsProps) {
   return (
     <section className="report-details-section section">
       <div className="container">
@@ -63,6 +64,81 @@ function ReportDetails({ report, dateLabel, backTo, backLabel }: ReportDetailsPr
           </dl>
 
           <ImageGallery images={report.images} />
+          {matches.length > 0 && (
+  <div className="report-details-card card" style={{ marginTop: '1.5rem' }}>
+    <h2>Possible Matches</h2>
+
+    {matches.map((match) => (
+      <Link
+  key={match.reportId}
+  to={
+    match.reportType === 'LOST'
+      ? `/lost/${match.reportId}`
+      : `/found/${match.reportId}`
+  }
+  style={{
+    textDecoration: 'none',
+    color: 'inherit',
+    display: 'block',
+  }}
+>
+        <div
+  style={{
+    display: 'flex',
+    gap: '1rem',
+    alignItems: 'center',
+  }}
+>
+  {match.thumbnail ? (
+    <img
+      src={match.thumbnail}
+      alt={match.title}
+      style={{
+        width: '90px',
+        height: '90px',
+        objectFit: 'cover',
+        borderRadius: '8px',
+      }}
+    />
+  ) : (
+    <div
+      style={{
+        width: '90px',
+        height: '90px',
+        borderRadius: '8px',
+        background: '#eee',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      No Image
+    </div>
+  )}
+
+  <div>
+    <h3>{match.title}</h3>
+
+    <p>
+      <strong>Match Score:</strong> {match.score}
+    </p>
+
+    <p>
+      <strong>Location:</strong> {match.location}
+    </p>
+  </div>
+</div>
+
+
+        <ul>
+          {match.reasons.map((reason: string) => (
+            <li key={reason}>{reason}</li>
+          ))}
+        </ul>
+      </Link>
+    ))}
+  </div>
+)}
 
           <Link to={backTo} className="btn btn-secondary report-details-back">
             {backLabel}
