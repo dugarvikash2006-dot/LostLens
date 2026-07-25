@@ -27,4 +27,7 @@ export const env = {
   cloudinaryCloudName: requireEnv('CLOUDINARY_CLOUD_NAME'),
   cloudinaryApiKey: requireEnv('CLOUDINARY_API_KEY'),
   cloudinaryApiSecret: requireEnv('CLOUDINARY_API_SECRET'),
+  // AI service (Milestone 2) — optional. If unset or unreachable,
+// image uploads still succeed; embeddings just aren't generated.
+aiServiceUrl: process.env.AI_SERVICE_URL || 'http://localhost:8000',
 }
