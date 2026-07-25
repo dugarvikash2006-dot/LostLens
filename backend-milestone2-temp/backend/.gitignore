@@ -1,9 +1,0 @@
-node_modules/
-dist/
-.env
-*.log
-.DS_Store
-
-# Prisma 7 generates client source code into this directory at build time.
-# It's regenerated via `npm run prisma:generate` and shouldn't be committed.
-src/generated/prisma/
