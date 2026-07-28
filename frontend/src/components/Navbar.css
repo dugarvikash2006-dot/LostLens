@@ -14,12 +14,18 @@
 }
 
 .navbar-logo {
-  font-size: var(--fs-md);
-  font-weight: 750;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--color-text);
   text-decoration: none;
   margin-right: auto;
+}
+
+.navbar-logo em {
+  font-style: normal;
+  color: var(--color-primary);
 }
 
 .navbar-links {
@@ -49,8 +55,10 @@
 
 .navbar-link-disabled {
   cursor: default;
+  /* No opacity reduction here — text-subtle is already the muted end of
+     the palette; compounding opacity on top previously pushed this
+     below WCAG AA (2.79:1). */
   color: var(--color-text-subtle);
-  opacity: 0.7;
 }
 
 .navbar-link-disabled:hover {
@@ -83,8 +91,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   background: var(--color-surface);

@@ -37,7 +37,7 @@ function Navbar() {
     <header className="navbar">
       <div className="navbar-inner container">
         <Link to="/" className="navbar-logo" aria-label="LostLens home">
-          LostLens
+          Lost<em>Lens</em>
         </Link>
 
         <nav
