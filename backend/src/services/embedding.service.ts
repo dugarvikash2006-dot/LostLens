@@ -19,6 +19,30 @@ import type { UploadedImage } from './upload.service'
  * so a caller can fire this off without ever risking the operation that
  * triggered it (an image upload).
  */
+export interface StoredEmbedding {
+  id: string
+  reportId: string | null
+  publicId: string
+  embedding: number[]
+}
+
+/**
+ * Returns every persisted embedding, unfiltered. Milestone 3B's
+ * similarity search iterates over this in memory rather than querying
+ * for a subset — no reportType/category/status filtering happens here,
+ * since that would be matching logic, not embedding persistence.
+ */
+export async function getAllStoredEmbeddings(): Promise<StoredEmbedding[]> {
+  return prisma.reportImageEmbedding.findMany({
+    select: {
+      id: true,
+      reportId: true,
+      publicId: true,
+      embedding: true,
+    },
+  })
+}
+
 export async function generateAndStoreEmbedding(image: UploadedImage): Promise<void> {
   const result = await getImageEmbedding(image.imageUrl)
 
