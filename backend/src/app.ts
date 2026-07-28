@@ -6,6 +6,7 @@ import healthRoutes from './routes/health.routes'
 import authRoutes from './routes/auth.routes'
 import itemRoutes from './routes/item.routes'
 import matchingRoutes from './routes/matching.routes'
+import suggestionRoutes from './routes/suggestion.routes'
 import { errorHandler } from './middleware/error.middleware'
 import { AppError } from './utils/app-error'
 
@@ -19,6 +20,7 @@ app.use('/api', healthRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/items', itemRoutes)
 app.use('/api/matching', matchingRoutes)
+app.use('/api/suggestions', suggestionRoutes)
 
 // Unmatched routes get the same safe JSON error shape as everything else,
 // instead of Express's default HTML 404 page.

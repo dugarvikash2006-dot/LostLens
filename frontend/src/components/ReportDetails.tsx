@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import type { ItemReport } from '../types/item'
 import { formatReportDate } from '../utils/formatDate'
 import ImageGallery from './ImageGallery'
+import AiSuggestions from './AiSuggestions'
 import '../pages/Reports.css'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -139,6 +140,8 @@ function ReportDetails({ report, dateLabel, backTo, backLabel, matches, }: Repor
     ))}
   </div>
 )}
+
+          <AiSuggestions reportId={report.id} />
 
           <Link to={backTo} className="btn btn-secondary report-details-back">
             {backLabel}

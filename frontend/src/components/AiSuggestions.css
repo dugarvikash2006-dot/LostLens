@@ -1,0 +1,92 @@
+.ai-suggestions-section {
+  padding: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.ai-suggestions-section h2 {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--space-4);
+}
+
+.ai-suggestions-status {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  margin: 0;
+}
+
+.ai-suggestions-error {
+  color: var(--color-danger);
+}
+
+.ai-suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.ai-suggestion-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ai-suggestion-thumb {
+  height: 140px;
+  background-color: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-suggestion-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ai-suggestion-no-image {
+  font-size: var(--fs-xs);
+  color: var(--color-text-subtle);
+}
+
+.ai-suggestion-body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.ai-suggestion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ai-suggestion-score {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.ai-suggestion-title {
+  font-size: var(--fs-md);
+}
+
+.ai-suggestion-meta {
+  font-size: var(--fs-xs);
+  color: var(--color-text-subtle);
+  margin: 0;
+}
+
+.ai-suggestion-view-btn {
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .ai-suggestions-grid {
+    grid-template-columns: 1fr;
+  }
+}

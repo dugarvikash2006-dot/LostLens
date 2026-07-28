@@ -1,6 +1,7 @@
-import type { Category, ReportType } from '../generated/prisma/client'
+import type { Category, MatchStatus, ReportStatus, ReportType } from '../generated/prisma/client'
 import { prisma } from '../config/prisma'
 import { rankReportCandidates } from './ranking.service'
+import { AppError } from '../utils/app-error'
 
 // Milestone 3D: orchestrates the existing embedding -> similarity ->
 // ranking pipeline for a single, just-created report, and persists the
@@ -77,4 +78,97 @@ export async function generateSuggestionsForReport(report: ReportForSuggestions)
   } catch (error) {
     console.error(`Failed to generate AI suggestions for report ${report.id}:`, error)
   }
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4: read-only access to already-generated suggestions
+// ---------------------------------------------------------------------------
+
+export interface ReportSuggestion {
+  matchId: string
+  /** The suggested candidate report's id — never the report being viewed. */
+  reportId: string
+  reportType: ReportType
+  itemName: string
+  category: Category
+  location: string
+  eventDate: Date
+  /** The candidate report's own status (OPEN, RETURNED, etc). */
+  status: ReportStatus
+  /** The Match row's own lifecycle status (SUGGESTED/REVIEWING/ACCEPTED/REJECTED). */
+  matchStatus: MatchStatus
+  /** imageScore on its stored 0-100 scale, or null if not yet computed. */
+  score: number | null
+  thumbnail: string | null
+}
+
+// Shared between lostItem/foundItem below so the candidate's shape is
+// defined once rather than duplicated per side.
+const CANDIDATE_SELECT = {
+  id: true,
+  reportType: true,
+  itemName: true,
+  category: true,
+  location: true,
+  eventDate: true,
+  status: true,
+  images: {
+    take: 1,
+    orderBy: { createdAt: 'asc' as const },
+    select: { imageUrl: true },
+  },
+} as const
+
+/**
+ * Reads already-generated AI suggestions (Match rows) for a report the
+ * requesting user owns. Read-only — this never recomputes anything; the
+ * embedding -> similarity -> ranking pipeline that produces these rows
+ * runs exactly once, at report-creation time (generateSuggestionsForReport).
+ *
+ * Same ownership rule as the other report-reading endpoints (404 if the
+ * report doesn't exist, 403 if it exists but isn't the caller's).
+ */
+export async function getSuggestionsForReport(
+  reportId: string,
+  requestingUserId: string,
+): Promise<ReportSuggestion[]> {
+  const report = await prisma.itemReport.findUnique({
+    where: { id: reportId },
+    select: { id: true, userId: true },
+  })
+
+  if (!report) {
+    throw new AppError(404, 'Report not found.')
+  }
+
+  if (report.userId !== requestingUserId) {
+    throw new AppError(403, 'You do not have permission to view suggestions for this report.')
+  }
+
+  const matches = await prisma.match.findMany({
+    where: { OR: [{ lostItemId: reportId }, { foundItemId: reportId }] },
+    include: {
+      lostItem: { select: CANDIDATE_SELECT },
+      foundItem: { select: CANDIDATE_SELECT },
+    },
+    orderBy: { imageScore: 'desc' },
+  })
+
+  return matches.map((match) => {
+    const candidate = match.lostItemId === reportId ? match.foundItem : match.lostItem
+
+    return {
+      matchId: match.id,
+      reportId: candidate.id,
+      reportType: candidate.reportType,
+      itemName: candidate.itemName,
+      category: candidate.category,
+      location: candidate.location,
+      eventDate: candidate.eventDate,
+      status: candidate.status,
+      matchStatus: match.status,
+      score: match.imageScore === null ? null : match.imageScore.toNumber(),
+      thumbnail: candidate.images[0]?.imageUrl ?? null,
+    }
+  })
 }
