@@ -152,6 +152,13 @@ function ReportForm({
           )}
 
           <form className="auth-form report-form" onSubmit={handleSubmit} noValidate>
+            <ImageUploader
+              images={images}
+              onChange={setImages}
+              disabled={isBusy}
+              onUploadingChange={setIsUploadingImages}
+            />
+
             <div className="form-field">
               <label htmlFor="report-title">Title</label>
               <input
@@ -249,13 +256,6 @@ function ReportForm({
                 </p>
               )}
             </div>
-
-            <ImageUploader
-              images={images}
-              onChange={setImages}
-              disabled={isBusy}
-              onUploadingChange={setIsUploadingImages}
-            />
 
             <button type="submit" className="btn btn-primary btn-block" disabled={isBusy}>
               {isSubmitting ? submittingLabel : isUploadingImages ? 'Uploading photos…' : submitLabel}

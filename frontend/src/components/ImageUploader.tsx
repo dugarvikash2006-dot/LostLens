@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { uploadImages } from '../api/item.api'
 import { ApiError } from '../api/client'
-import { ALLOWED_IMAGE_MIME_TYPES, MAX_IMAGE_SIZE_MB, MAX_REPORT_IMAGES } from '../types/item'
+import { MAX_REPORT_IMAGES } from '../types/item'
 import type { ImageReference } from '../types/item'
 import './ImageUploader.css'
 
@@ -81,8 +81,35 @@ input.value = ""
   }
 
   return (
-    <div className="form-field">
-      <label htmlFor="report-images">Photos (optional, up to {MAX_REPORT_IMAGES})</label>
+    <div className="form-field image-uploader-field">
+      {remainingSlots > 0 && (
+        <label htmlFor="report-images" className={`dropzone-label ${isDisabled ? 'dropzone-label-disabled' : ''}`}>
+          <input
+            id="report-images"
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={handleFilesSelected}
+            disabled={isDisabled}
+            className="visually-hidden"
+          />
+          <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 16V4m0 0-4 4m4-4 4 4M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="dropzone-title">Add photos</span>
+          <span className="dropzone-hint">
+            Up to {MAX_REPORT_IMAGES} photos · JPG, PNG or WEBP · the clearer the photo, the
+            faster Lens Match can find it
+          </span>
+        </label>
+      )}
 
       {images.length > 0 && (
         <div className="image-preview-grid">
@@ -102,18 +129,6 @@ input.value = ""
           ))}
         </div>
       )}
-
-      {remainingSlots > 0 && (
-        
-   <input
-  id="report-images"
-  ref={inputRef}
-  type="file"
-  accept="image/jpeg,image/png,image/webp"
-  multiple
-  onChange={handleFilesSelected}
-  disabled={isDisabled}
-/>   )}
 
       {isUploading && (
         <p className="image-upload-status" role="status" aria-live="polite">

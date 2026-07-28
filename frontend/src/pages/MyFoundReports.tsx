@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getMyFoundReports } from '../api/item.api'
 import { ApiError } from '../api/client'
 import ReportCard from '../components/ReportCard'
+import { useTopMatchScores } from '../hooks/useTopMatchScores'
 import type { ItemReport } from '../types/item'
 import './Reports.css'
 
@@ -10,6 +11,7 @@ function MyFoundReports() {
   const [reports, setReports] = useState<ItemReport[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const topMatchScores = useTopMatchScores(reports)
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +76,7 @@ function MyFoundReports() {
                 report={report}
                 to={`/found/${report.id}`}
                 dateLabel="Found"
+                topMatchScore={topMatchScores[report.id]}
               />
             ))}
           </div>
