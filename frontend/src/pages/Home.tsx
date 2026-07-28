@@ -1,11 +1,17 @@
+import { Link } from 'react-router-dom'
+import ObjectPortrait from '../components/ObjectPortrait'
+import ConfidenceRing from '../components/ConfidenceRing'
+import LensMatchMark from '../components/LensMatchMark'
 import './Home.css'
 
-// Mock data only — Phase 1 is frontend-only, no AI, no API calls.
+// Landing page (Phase 5 redesign). Marketing content only — no
+// authenticated data. The Dashboard page is where a logged-in user's
+// real reports and Lens Match results live.
 
 const steps = [
   {
     title: 'Report',
-    description: 'Upload details and a photo of your lost or found item.',
+    description: 'Add a photo and a few details — lost or found.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path
@@ -19,33 +25,18 @@ const steps = [
     ),
   },
   {
-    title: 'Smart Matching',
-    description: 'LostLens compares images, descriptions, locations, and dates.',
+    title: 'Lens Match compares',
+    description: 'Every photo is checked against opposite reports automatically.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="8" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6" />
-        <circle cx="16" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Verify',
-    description: 'Review potential matches and complete secure ownership verification.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path
-          d="m5 12.5 4.5 4.5L19 7"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" />
       </svg>
     ),
   },
   {
     title: 'Reunite',
-    description: 'Coordinate the return and close the case successfully.',
+    description: 'Review your matches and arrange the handoff.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path
@@ -59,28 +50,11 @@ const steps = [
   },
 ]
 
-const matchingFactors = [
-  { label: 'Visual Similarity', description: 'Compares photos to find items that look alike.' },
-  { label: 'Description Similarity', description: 'Reads written details to catch matching wording.' },
-  { label: 'Location Proximity', description: 'Weighs how close the lost and found spots are.' },
-  { label: 'Date Proximity', description: 'Considers how close the reported dates are.' },
+const reunions = [
+  { item: 'water-bottle' as const, name: 'Blue Water Bottle', place: 'Sports Complex', days: 2 },
+  { item: 'headphones' as const, name: 'Black Wireless Headphones', place: 'Library', days: 1 },
+  { item: 'keys' as const, name: 'Silver Keychain', place: 'Parking Lot', days: 3 },
 ]
-
-const scoreBreakdown = [
-  { label: 'Visual Similarity', value: 92 },
-  { label: 'Description Similarity', value: 85 },
-  { label: 'Location Match', value: 90 },
-  { label: 'Date Proximity', value: 88 },
-]
-
-const recentItems = [
-  { name: 'Black Wireless Headphones', status: 'Found', category: 'Electronics', location: 'Library, 2nd Floor', date: 'Jul 3' },
-  { name: 'Blue Water Bottle', status: 'Lost', category: 'Personal Item', location: 'Sports Complex', date: 'Jul 2' },
-  { name: 'Student ID Card', status: 'Found', category: 'Documents', location: 'Cafeteria', date: 'Jul 1' },
-  { name: 'Laptop Charger', status: 'Lost', category: 'Electronics', location: 'Room B-204', date: 'Jun 29' },
-  { name: 'Brown Wallet', status: 'Found', category: 'Personal Item', location: 'Main Gate', date: 'Jun 28' },
-  { name: 'Silver Keychain', status: 'Lost', category: 'Accessories', location: 'Parking Lot', date: 'Jun 27' },
-] as const
 
 function Home() {
   return (
@@ -89,44 +63,33 @@ function Home() {
       <section className="hero section">
         <div className="container hero-inner">
           <div className="hero-copy">
-            <h1>Lost something? We&apos;ll help you find it.</h1>
+            <span className="eyebrow">Powered by Lens Match</span>
+            <h1>
+              Lost something? <span className="hero-accent">Lens</span> finds it.
+            </h1>
             <p className="hero-subtext">
-              LostLens intelligently matches lost and found items using images,
-              descriptions, location, and date.
+              LostLens compares photos of lost and found items automatically, so the
+              right match finds you — often before you&apos;ve finished searching.
             </p>
             <div className="hero-actions">
-              <button type="button" className="btn btn-primary">
-                Report Lost Item
-              </button>
-              <button type="button" className="btn btn-secondary">
-                Report Found Item
-              </button>
+              <Link to="/create-lost" className="btn btn-primary btn-lg">
+                Report a lost item
+              </Link>
+              <Link to="/create-found" className="btn btn-secondary btn-lg">
+                Report a found item
+              </Link>
             </div>
-            <button type="button" className="hero-browse-link">
-              Browse Reported Items →
-            </button>
           </div>
 
-          <div className="hero-visual" aria-hidden="true">
-            <div className="match-card match-card-lost">
-              <span className="badge badge-lost">Lost</span>
-              <div className="match-card-thumb" />
-              <p className="match-card-title">Blue Water Bottle</p>
-              <p className="match-card-meta">Sports Complex · Jul 2</p>
+          <div className="hero-visual">
+            <div className="hero-visual-row">
+              <ObjectPortrait item="water-bottle" className="hero-portrait hero-portrait-a" />
+              <div className="hero-visual-ring">
+                <ConfidenceRing score={91} size="lg" />
+              </div>
+              <ObjectPortrait item="water-bottle" className="hero-portrait hero-portrait-b" />
             </div>
-
-            <div className="match-connector">
-              <span className="match-connector-line" />
-              <span className="match-connector-score">91%</span>
-              <span className="match-connector-line" />
-            </div>
-
-            <div className="match-card match-card-found">
-              <span className="badge badge-found">Found</span>
-              <div className="match-card-thumb" />
-              <p className="match-card-title">Blue Water Bottle</p>
-              <p className="match-card-meta">Near Sports Complex · Jul 3</p>
-            </div>
+            <p className="hero-visual-caption">Reunited in 2 days · Sports Complex</p>
           </div>
         </div>
       </section>
@@ -136,14 +99,13 @@ function Home() {
         <div className="container">
           <div className="section-header">
             <span className="eyebrow">Process</span>
-            <h2>How LostLens Works</h2>
-            <p>Four simple steps take a report from submission to a reunited item.</p>
+            <h2>Three steps to reunited</h2>
           </div>
 
           <ol className="steps-grid">
             {steps.map((step, index) => (
               <li className="step-card" key={step.title}>
-                <span className="step-number">{String(index + 1).padStart(2, '0')}</span>
+                <span className="step-number mono">{String(index + 1).padStart(2, '0')}</span>
                 <span className="step-icon">{step.icon}</span>
                 <h3>{step.title}</h3>
                 <p>{step.description}</p>
@@ -153,88 +115,48 @@ function Home() {
         </div>
       </section>
 
-      {/* ---------------- INTELLIGENT MATCHING ---------------- */}
-      <section className="section matching-section">
-        <div className="container matching-inner">
-          <div className="matching-copy">
-            <span className="eyebrow">Matching Engine</span>
-            <h2>Intelligent Matching, Clear Results</h2>
-            <p>
-              Instead of relying on keywords alone, LostLens combines several
-              signals to surface the most likely matches between lost and found
-              reports.
-            </p>
-
-            <ul className="matching-factors">
-              {matchingFactors.map((factor) => (
-                <li key={factor.label}>
-                  <span className="matching-factor-dot" aria-hidden="true" />
-                  <div>
-                    <p className="matching-factor-label">{factor.label}</p>
-                    <p className="matching-factor-description">{factor.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="sample-match-card card">
-            <div className="sample-match-header">
-              <span className="eyebrow" style={{ marginBottom: 0 }}>
-                Potential Match
-              </span>
-              <span className="sample-match-score">89% Match</span>
+      {/* ---------------- LENS MATCH TEASER ---------------- */}
+      <section className="section lens-match-section">
+        <div className="container">
+          <div className="lens-match-teaser card">
+            <div className="lens-match-teaser-head">
+              <LensMatchMark />
+              <span className="badge badge-found">91% match</span>
             </div>
-            <h3 className="sample-match-title">Black Wireless Headphones</h3>
-
-            <div className="sample-match-breakdown">
-              {scoreBreakdown.map((row) => (
-                <div className="score-row" key={row.label}>
-                  <div className="score-row-labels">
-                    <span>{row.label}</span>
-                    <span>{row.value}%</span>
-                  </div>
-                  <div className="score-bar-track">
-                    <div className="score-bar-fill" style={{ width: `${row.value}%` }} />
-                  </div>
-                </div>
-              ))}
+            <div className="lens-match-teaser-body">
+              <ObjectPortrait item="headphones" className="lens-match-teaser-thumb" />
+              <div>
+                <h3>Black Wireless Headphones</h3>
+                <p className="lens-match-teaser-meta">Found near Library, 2nd Floor</p>
+                <p className="lens-match-teaser-copy">
+                  The moment a found report is added, Lens Match checks it against every
+                  open lost report automatically — no searching required.
+                </p>
+              </div>
+              <ConfidenceRing score={91} />
             </div>
-
-            <p className="sample-match-note">
-              Match scores are suggestions and do not confirm ownership.
-            </p>
           </div>
         </div>
       </section>
 
-      {/* ---------------- RECENT ITEMS ---------------- */}
-      <section id="browse" className="section recent-items">
+      {/* ---------------- RECENTLY REUNITED ---------------- */}
+      <section className="section recent-items">
         <div className="container">
           <div className="section-header">
-            <span className="eyebrow">Community Reports</span>
-            <h2>Recently Reported Items</h2>
-            <p>A preview of items reported lost or found by the community.</p>
+            <span className="eyebrow">Community</span>
+            <h2>Recently reunited</h2>
+            <p>A few of the items Lens Match has helped bring home.</p>
           </div>
 
           <div className="items-grid">
-            {recentItems.map((item) => (
-              <div className="item-card card" key={item.name}>
-                <div className="item-card-thumb">
-                  <span
-                    className={`badge ${item.status === 'Lost' ? 'badge-lost' : 'badge-found'}`}
-                  >
-                    {item.status}
-                  </span>
-                </div>
+            {reunions.map((r) => (
+              <div className="item-card card" key={r.name}>
+                <ObjectPortrait item={r.item} className="item-card-thumb" />
                 <div className="item-card-body">
-                  <h3 className="item-card-title">{item.name}</h3>
-                  <p className="item-card-meta">{item.category}</p>
-                  <p className="item-card-meta">{item.location}</p>
-                  <p className="item-card-meta">{item.date}</p>
-                  <button type="button" className="btn btn-secondary btn-block">
-                    View Details
-                  </button>
+                  <h3 className="item-card-title">{r.name}</h3>
+                  <p className="item-card-meta">
+                    Reunited in {r.days} {r.days === 1 ? 'day' : 'days'} · {r.place}
+                  </p>
                 </div>
               </div>
             ))}
@@ -247,16 +169,16 @@ function Home() {
         <div className="container cta-inner">
           <h2>Lost something or found something?</h2>
           <p>
-            Create a report and let LostLens help connect the right item with
-            the right person.
+            Create a report and let Lens Match help connect the right item with the
+            right person.
           </p>
           <div className="cta-actions">
-            <button type="button" className="btn btn-primary">
+            <Link to="/create-lost" className="btn btn-primary">
               Report Lost Item
-            </button>
-            <button type="button" className="btn btn-secondary btn-on-dark">
+            </Link>
+            <Link to="/create-found" className="btn btn-secondary btn-on-dark">
               Report Found Item
-            </button>
+            </Link>
           </div>
         </div>
       </section>

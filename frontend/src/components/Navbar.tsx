@@ -50,6 +50,9 @@ function Navbar() {
           </NavLink>
           {isAuthenticated && (
             <>
+              <NavLink to="/dashboard" className="navbar-link">
+                Dashboard
+              </NavLink>
               <NavLink to="/create-lost" className="navbar-link">
                 Create Lost Report
               </NavLink>

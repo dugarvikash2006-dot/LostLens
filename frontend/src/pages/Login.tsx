@@ -55,9 +55,8 @@ function Login() {
 
     try {
       await login({ email, password })
-      // Auth state updates immediately via context; no dashboard exists
-      // yet, so return to the home page.
-      navigate('/')
+      // Auth state updates immediately via context.
+      navigate('/dashboard')
     } catch (error) {
       if (error instanceof ApiError) {
         // Backend messages (e.g. "Invalid email or password.") are safe,

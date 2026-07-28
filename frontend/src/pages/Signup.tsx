@@ -73,9 +73,8 @@ function Signup() {
 
     try {
       await signup({ fullName: fullName.trim(), email, password })
-      // Auth state updates immediately via context; no dashboard exists
-      // yet, so return to the home page.
-      navigate('/')
+      // Auth state updates immediately via context.
+      navigate('/dashboard')
     } catch (error) {
       if (error instanceof ApiError) {
         // Covers duplicate email (409) and backend validation errors
