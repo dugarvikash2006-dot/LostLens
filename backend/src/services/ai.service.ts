@@ -3,6 +3,7 @@ import { env } from '../config/env'
 export interface ImageEmbedding {
   dimensions: number
   embedding: number[]
+  modelName: string
 }
 
 // Bounds how long we'll wait on the AI service before giving up. Keeps a
@@ -11,12 +12,22 @@ export interface ImageEmbedding {
 const EMBED_REQUEST_TIMEOUT_MS = 5000
 
 function isEmbeddingShape(value: unknown): value is ImageEmbedding {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as Record<string, unknown>).dimensions === 'number' &&
-    Array.isArray((value as Record<string, unknown>).embedding)
-  )
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    typeof (value as Record<string, unknown>).dimensions !== 'number' ||
+    !Array.isArray((value as Record<string, unknown>).embedding) ||
+    typeof (value as Record<string, unknown>).modelName !== 'string'
+  ) {
+    return false
+  }
+
+  // A response can have the right field types but still be internally
+  // inconsistent (e.g. a truncated vector) — checking that here means
+  // every caller of getImageEmbedding gets a vector it can trust
+  // unconditionally, rather than each one re-deriving this check itself.
+  const { dimensions, embedding } = value as ImageEmbedding
+  return dimensions > 0 && dimensions === embedding.length
 }
 
 /**

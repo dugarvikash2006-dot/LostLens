@@ -1,5 +1,5 @@
 import { cloudinary } from '../config/cloudinary'
-import { getImageEmbedding, logEmbeddingSummary } from './ai.service'
+import { generateAndStoreEmbedding } from './embedding.service'
 export interface UploadedImage {
   imageUrl: string
   publicId: string
@@ -26,22 +26,13 @@ function uploadBuffer(buffer: Buffer): Promise<UploadedImage> {
     uploadStream.end(buffer)
   })
 }
-async function requestAndLogEmbedding(imageUrl: string): Promise<void> {
-  const embedding = await getImageEmbedding(imageUrl)
-
-  if (embedding) {
-    logEmbeddingSummary(imageUrl, embedding)
-  } else {
-    console.warn(`No embedding generated for ${imageUrl} (AI service unavailable or errored).`)
-  }
-}
 export async function uploadReportImages(
   files: Express.Multer.File[],
 ): Promise<UploadedImage[]> {
   const uploaded = await Promise.all(files.map((file) => uploadBuffer(file.buffer)))
 
   await Promise.allSettled(
-    uploaded.map((image) => requestAndLogEmbedding(image.imageUrl))
+    uploaded.map((image) => generateAndStoreEmbedding(image))
   )
 
   return uploaded

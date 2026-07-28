@@ -49,6 +49,10 @@ class EmbedRequest(BaseModel):
 class EmbedResponse(BaseModel):
     dimensions: int
     embedding: list[float]
+    # Identifies which checkpoint produced this embedding, so consumers
+    # persisting it (e.g. the backend) don't have to hardcode a constant
+    # that silently drifts if this service's model is ever upgraded.
+    modelName: str
 
 
 # ---------------------------------------------------------------------------
@@ -189,4 +193,8 @@ def embed(request: EmbedRequest) -> EmbedResponse:
             status_code=500, detail="Failed to generate an embedding for this image."
         ) from error
 
-    return EmbedResponse(dimensions=len(embedding), embedding=embedding)
+    return EmbedResponse(
+        dimensions=len(embedding),
+        embedding=embedding,
+        modelName=f"{MODEL_NAME}/{PRETRAINED}",
+    )

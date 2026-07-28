@@ -137,6 +137,10 @@ model ItemReport {
   // change that supports multiple images per report.
   images ReportImage[]
 
+  // Milestone 3A: embeddings generated at upload time (before this
+  // report exists) that later got linked to this report, if any.
+  imageEmbeddings ReportImageEmbedding[]
+
   @@index([userId])
   @@index([reportType])
   @@index([category])
@@ -165,6 +169,53 @@ model ReportImage {
 
   @@index([reportId])
   @@map("report_images")
+}
+
+// ------------------------------------------------------------------------
+// ReportImageEmbedding — OpenCLIP embedding for an uploaded image
+// ------------------------------------------------------------------------
+//
+// Milestone 3A: storage only. No similarity search, ranking, or automatic
+// matching reads this table yet — those are later milestones.
+//
+// `reportId` is nullable because embeddings are generated immediately
+// after an image is uploaded (POST /api/items/upload), which happens
+// before any ItemReport exists — reports are only created in a separate,
+// later request. This row is linked to a report if/when that image is
+// later included in a LOST/FOUND report submission; wiring up that link
+// is out of scope for this milestone.
+//
+// `embedding` is a plain Float[] rather than a pgvector column: Prisma 7
+// has no native vector scalar type. The only way to touch a pgvector
+// column at all is the `postgresqlExtensions` preview feature plus
+// `Unsupported("vector(n)")`, and any `Unsupported`-typed field is
+// entirely excluded from the generated Client's type-safe API — every
+// read and write would need hand-written raw SQL, which every other
+// model in this codebase avoids. Float[] is fully supported, fully
+// typed, and sufficient for storage-only; a future milestone that
+// actually needs similarity search can add a pgvector-backed column then.
+model ReportImageEmbedding {
+  id String @id @default(cuid())
+
+  reportId String?
+  report   ItemReport? @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  publicId String @unique
+  imageUrl String
+
+  embedding          Float[]
+  embeddingDimension Int
+  // Identifies which OpenCLIP checkpoint produced this vector (e.g.
+  // "ViT-B-32/laion2b_s34b_b79k") — reported by the AI service itself
+  // rather than hardcoded here, so it always reflects whatever model
+  // actually generated this specific embedding.
+  modelName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reportId])
+  @@map("report_image_embeddings")
 }
 
 // ------------------------------------------------------------------------
