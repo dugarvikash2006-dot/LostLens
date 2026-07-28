@@ -1,6 +1,7 @@
 import { prisma } from '../config/prisma'
 import { AppError } from '../utils/app-error'
 import { linkEmbeddingsToReport } from './embedding.service'
+import { generateSuggestionsForReport } from './suggestion.service'
 import type { CreateLostReportInput, CreateFoundReportInput } from '../validators/item.validator'
 
 // This phase creates LOST and FOUND reports, optionally with images
@@ -74,6 +75,11 @@ async function createReport(ownerId: string, reportType: ReportType, input: Crea
       input.images.map((image) => image.publicId),
     )
   }
+
+  // Milestone 3D: must run after linking above — it looks up this
+  // report's own embedding via reportId, which linkEmbeddingsToReport
+  // just populated.
+  await generateSuggestionsForReport(report)
 
   return report
 }
