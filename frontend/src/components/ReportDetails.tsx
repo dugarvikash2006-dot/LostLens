@@ -73,7 +73,7 @@ function ReportDetails({ report, dateLabel, backTo, backLabel, matches, }: Repor
   key={match.reportId}
   to={
     match.reportType === 'LOST'
-      ? `/lost/${match.reportId}`
+      ? `/items/${match.reportId}`
       : `/found/${match.reportId}`
   }
   style={{

@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import { getStoredToken } from '../utils/tokenStorage'
 
 interface MatchResult {
   reportId: string
@@ -19,6 +20,7 @@ interface MatchesResponse {
 export async function getMatches(reportId: string) {
   const response = await apiRequest<MatchesResponse>(
     `/api/matching/${reportId}`,
+    { token: getStoredToken() },
   )
 
   return response.matches

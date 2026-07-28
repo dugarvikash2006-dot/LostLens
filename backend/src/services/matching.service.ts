@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma'
+import { AppError } from '../utils/app-error'
 interface MatchScore {
   score: number
   reasons: string[]
@@ -38,7 +39,7 @@ if (daysDifference === 0) {
     reasons,
   }
 }
-  async findMatches(reportId: string) {
+  async findMatches(reportId: string, requestingUserId: string) {
     const report = await prisma.itemReport.findUnique({
       where: {
         id: reportId,
@@ -47,6 +48,10 @@ if (daysDifference === 0) {
 
     if (!report) {
       throw new Error('Report not found')
+    }
+
+    if (report.userId !== requestingUserId) {
+      throw new AppError(403, 'You do not have permission to view matches for this report.')
     }
 
     const oppositeType =

@@ -78,7 +78,7 @@ function ItemDetails() {
   report={report}
   matches={[]}
   dateLabel="Date Lost"
-  backTo="/my-lost"
+  backTo="/my-reports"
   backLabel="Back to My Lost Reports"
 />
   )

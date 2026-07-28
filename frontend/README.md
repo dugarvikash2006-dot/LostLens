@@ -26,8 +26,11 @@ The dev server runs at `http://localhost:5173`.
 See `.env.example`:
 
 - `VITE_API_URL` — base URL of the LostLens backend API. Defaults to
-  `http://localhost:5001` if unset, since that's where the backend runs in
-  local development (see `backend/README.md`).
+  `http://localhost:5001` if unset (see `src/api/client.ts`). The backend
+  itself defaults to port `5000` in local development (see
+  `backend/.env.example` and `backend/README.md`) — set `VITE_API_URL`
+  explicitly in your `.env` to match whatever port the backend is
+  actually running on.
 
 The backend must be running (with a real database migrated/seeded, and
 `CORS_ORIGIN=http://localhost:5173` in its own `.env`) for signup, login,
@@ -185,8 +188,8 @@ internal implementation now delegates to the shared components above.
 
 ## Manual Testing Sequence
 
-With the backend running on `http://localhost:5001` (migrated + reachable)
-and this app running on `http://localhost:5173`:
+With the backend running on `http://localhost:5000` (migrated + reachable,
+see `backend/README.md`) and this app running on `http://localhost:5173`:
 
 1. Go to `/signup`, create an account with a new email → should redirect
    to `/` and the Navbar should show "Hi, `<first name>`" and a Logout
