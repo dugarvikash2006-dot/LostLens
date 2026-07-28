@@ -43,6 +43,31 @@ export async function getAllStoredEmbeddings(): Promise<StoredEmbedding[]> {
   })
 }
 
+/**
+ * Milestone 3C.5: links every embedding for the given Cloudinary
+ * publicIds to a report, once that report has been successfully
+ * created. Embeddings are generated at upload time, before any report
+ * exists (see generateAndStoreEmbedding above) — this closes that gap.
+ *
+ * Best-effort, same as embedding generation itself: a failure here must
+ * never affect whether the report was created, so it's caught and
+ * logged rather than thrown.
+ */
+export async function linkEmbeddingsToReport(reportId: string, publicIds: string[]): Promise<void> {
+  if (publicIds.length === 0) {
+    return
+  }
+
+  try {
+    await prisma.reportImageEmbedding.updateMany({
+      where: { publicId: { in: publicIds } },
+      data: { reportId },
+    })
+  } catch (error) {
+    console.error(`Failed to link embeddings to report ${reportId}:`, error)
+  }
+}
+
 export async function generateAndStoreEmbedding(image: UploadedImage): Promise<void> {
   const result = await getImageEmbedding(image.imageUrl)
 

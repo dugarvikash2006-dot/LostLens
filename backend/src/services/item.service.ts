@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma'
 import { AppError } from '../utils/app-error'
+import { linkEmbeddingsToReport } from './embedding.service'
 import type { CreateLostReportInput, CreateFoundReportInput } from '../validators/item.validator'
 
 // This phase creates LOST and FOUND reports, optionally with images
@@ -41,7 +42,7 @@ interface CreateReportFields {
 const REPORT_INCLUDE = { images: true } as const
 
 async function createReport(ownerId: string, reportType: ReportType, input: CreateReportFields) {
-  return prisma.itemReport.create({
+  const report = await prisma.itemReport.create({
     data: {
       userId: ownerId,
       reportType,
@@ -63,6 +64,18 @@ async function createReport(ownerId: string, reportType: ReportType, input: Crea
     },
     include: REPORT_INCLUDE,
   })
+
+  // Milestone 3C.5: the embeddings for these images were generated at
+  // upload time, before this report existed (see embedding.service.ts) —
+  // link them now that a report id is finally available.
+  if (input.images && input.images.length > 0) {
+    await linkEmbeddingsToReport(
+      report.id,
+      input.images.map((image) => image.publicId),
+    )
+  }
+
+  return report
 }
 
 async function getMyReports(ownerId: string, reportType: ReportType) {
