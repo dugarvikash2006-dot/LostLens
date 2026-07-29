@@ -1,12 +1,31 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import ObjectPortrait from '../components/ObjectPortrait'
 import ConfidenceRing from '../components/ConfidenceRing'
 import LensMatchMark from '../components/LensMatchMark'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 import './Home.css'
 
 // Landing page (Phase 5 redesign). Marketing content only — no
 // authenticated data. The Dashboard page is where a logged-in user's
 // real reports and Lens Match results live.
+
+// Phase 6.1: word-level stagger for the hero heading. Split at the
+// word level (not per-character) so each span is a real word for
+// screen readers and text selection; "Lens" keeps the existing accent
+// styling.
+const heroWords = [
+  { text: 'Lost', accent: false },
+  { text: 'something?', accent: false },
+  { text: 'Lens', accent: true },
+  { text: 'finds', accent: false },
+  { text: 'it.', accent: false },
+]
+
+// Max mouse-parallax offset for the hero object photos, in pixels.
+// Kept small deliberately (spec: 3-6px) so it reads as a subtle depth
+// cue rather than motion that could bother sensitive users.
+const PARALLAX_MAX_PX = 6
 
 const steps = [
   {
@@ -57,6 +76,48 @@ const reunions = [
 ]
 
 function Home() {
+  const heroVisualRef = useRef<HTMLDivElement>(null)
+  const { ref: howItWorksRef, isVisible: howItWorksVisible } = useScrollReveal<HTMLElement>()
+  const { ref: lensMatchRef, isVisible: lensMatchVisible } = useScrollReveal<HTMLElement>()
+  const { ref: recentItemsRef, isVisible: recentItemsVisible } = useScrollReveal<HTMLElement>()
+  const { ref: ctaRef, isVisible: ctaVisible } = useScrollReveal<HTMLElement>()
+
+  useEffect(() => {
+    const node = heroVisualRef.current
+    if (!node) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    let frame = 0
+
+    const handleMove = (event: MouseEvent) => {
+      const rect = node.getBoundingClientRect()
+      const relX = (event.clientX - (rect.left + rect.width / 2)) / (rect.width / 2)
+      const relY = (event.clientY - (rect.top + rect.height / 2)) / (rect.height / 2)
+
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const x = Math.max(-1, Math.min(1, relX)) * PARALLAX_MAX_PX
+        const y = Math.max(-1, Math.min(1, relY)) * PARALLAX_MAX_PX
+        node.style.setProperty('--parallax-x', `${x.toFixed(1)}px`)
+        node.style.setProperty('--parallax-y', `${y.toFixed(1)}px`)
+      })
+    }
+
+    const handleLeave = () => {
+      cancelAnimationFrame(frame)
+      node.style.setProperty('--parallax-x', '0px')
+      node.style.setProperty('--parallax-y', '0px')
+    }
+
+    node.addEventListener('mousemove', handleMove)
+    node.addEventListener('mouseleave', handleLeave)
+    return () => {
+      cancelAnimationFrame(frame)
+      node.removeEventListener('mousemove', handleMove)
+      node.removeEventListener('mouseleave', handleLeave)
+    }
+  }, [])
+
   return (
     <>
       {/* ---------------- HERO ---------------- */}
@@ -65,13 +126,21 @@ function Home() {
           <div className="hero-copy">
             <span className="eyebrow">Powered by Lens Match</span>
             <h1>
-              Lost something? <span className="hero-accent">Lens</span> finds it.
+              {heroWords.map((word, index) => (
+                <span
+                  className={`hero-word${word.accent ? ' hero-accent' : ''}`}
+                  style={{ animationDelay: `${index * 0.08}s` }}
+                  key={word.text}
+                >
+                  {word.text}
+                </span>
+              ))}
             </h1>
-            <p className="hero-subtext">
+            <p className="hero-subtext hero-enter" style={{ animationDelay: '0.4s' }}>
               LostLens compares photos of lost and found items automatically, so the
               right match finds you — often before you&apos;ve finished searching.
             </p>
-            <div className="hero-actions">
+            <div className="hero-actions hero-enter" style={{ animationDelay: '0.55s' }}>
               <Link to="/create-lost" className="btn btn-primary btn-lg">
                 Report a lost item
               </Link>
@@ -81,7 +150,11 @@ function Home() {
             </div>
           </div>
 
-          <div className="hero-visual">
+          <div
+            className="hero-visual hero-enter"
+            style={{ animationDelay: '0.5s' }}
+            ref={heroVisualRef}
+          >
             <div className="hero-visual-row">
               <ObjectPortrait item="water-bottle" className="hero-portrait hero-portrait-a" />
               <div className="hero-visual-ring">
@@ -95,7 +168,11 @@ function Home() {
       </section>
 
       {/* ---------------- HOW IT WORKS ---------------- */}
-      <section id="how-it-works" className="section how-it-works">
+      <section
+        id="how-it-works"
+        className={`section how-it-works scroll-reveal${howItWorksVisible ? ' is-visible' : ''}`}
+        ref={howItWorksRef}
+      >
         <div className="container">
           <div className="section-header">
             <span className="eyebrow">Process</span>
@@ -116,7 +193,10 @@ function Home() {
       </section>
 
       {/* ---------------- LENS MATCH TEASER ---------------- */}
-      <section className="section lens-match-section">
+      <section
+        className={`section lens-match-section scroll-reveal${lensMatchVisible ? ' is-visible' : ''}`}
+        ref={lensMatchRef}
+      >
         <div className="container">
           <div className="lens-match-teaser card">
             <div className="lens-match-teaser-head">
@@ -142,7 +222,10 @@ function Home() {
       </section>
 
       {/* ---------------- RECENTLY REUNITED ---------------- */}
-      <section className="section recent-items">
+      <section
+        className={`section recent-items scroll-reveal${recentItemsVisible ? ' is-visible' : ''}`}
+        ref={recentItemsRef}
+      >
         <div className="container">
           <div className="section-header">
             <span className="eyebrow">Community</span>
@@ -167,7 +250,10 @@ function Home() {
       </section>
 
       {/* ---------------- CTA ---------------- */}
-      <section className="section cta-section">
+      <section
+        className={`section cta-section scroll-reveal${ctaVisible ? ' is-visible' : ''}`}
+        ref={ctaRef}
+      >
         <div className="container cta-inner">
           <h2>Lost something or found something?</h2>
           <p>

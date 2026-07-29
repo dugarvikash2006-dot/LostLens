@@ -17,6 +17,49 @@
   color: var(--color-primary);
 }
 
+/* ---- Phase 6.1: hero entrance motion ---- */
+
+.hero-word {
+  display: inline-block;
+  opacity: 0;
+  animation: hero-word-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-word + .hero-word {
+  margin-left: 0.28ch;
+}
+
+@keyframes hero-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Shared fade-up entrance for the subheading, CTA row and hero visual —
+   same motion language as .hero-word, just one shot instead of staggered
+   per-word, each given its own delay inline so they reveal in sequence
+   after the heading finishes. */
+.hero-enter {
+  opacity: 0;
+  animation: hero-enter-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes hero-enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .hero-subtext {
   margin-top: var(--space-5);
   font-size: var(--fs-md);
@@ -38,14 +81,16 @@
 
 .hero-portrait {
   width: 42%;
+  transition: transform 0.15s ease-out;
 }
 
 .hero-portrait-a {
-  transform: rotate(-3deg);
+  transform: rotate(-3deg) translate(var(--parallax-x, 0px), var(--parallax-y, 0px));
 }
 
 .hero-portrait-b {
-  transform: rotate(3deg);
+  transform: rotate(3deg)
+    translate(calc(var(--parallax-x, 0px) * -1), calc(var(--parallax-y, 0px) * -1));
 }
 
 .hero-visual-ring {
@@ -85,6 +130,12 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.step-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
 }
 
 .step-number {
@@ -180,9 +231,19 @@
   overflow: hidden;
 }
 
+.item-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
 .item-card-thumb {
   border-radius: 0;
   aspect-ratio: 4 / 3.4;
+  transition: transform 0.3s ease;
+}
+
+.item-card:hover .item-card-thumb {
+  transform: scale(1.03);
 }
 
 .item-card-body {
