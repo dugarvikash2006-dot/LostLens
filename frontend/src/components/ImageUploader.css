@@ -88,6 +88,16 @@
   justify-content: center;
 }
 
+/* Expands the actual tap target to ~44px without enlarging the visible
+   22px circle — the small thumbnail has no room for a 44px button
+   without it overlapping its neighbors, but the tap area still should
+   meet the touch-target minimum. */
+.image-preview-remove::before {
+  content: '';
+  position: absolute;
+  inset: -11px;
+}
+
 .image-preview-remove:hover {
   background-color: rgba(16, 24, 40, 0.85);
 }

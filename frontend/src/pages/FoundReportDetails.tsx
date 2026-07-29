@@ -5,6 +5,9 @@ import { getMatches } from '../api/matching.api'
 import type { MatchResult } from '../api/matching.api'
 import { ApiError } from '../api/client'
 import ReportDetails from '../components/ReportDetails'
+import ReportDetailsSkeleton from '../components/ReportDetailsSkeleton'
+import StateMessage from '../components/StateMessage'
+import { AlertIcon } from '../components/icons'
 import type { ItemReport } from '../types/item'
 import './Reports.css'
 
@@ -65,9 +68,10 @@ function FoundReportDetails() {
     return (
       <section className="report-details-section section">
         <div className="container">
-          <div className="reports-state" role="status" aria-live="polite">
+          <ReportDetailsSkeleton />
+          <p className="visually-hidden" role="status" aria-live="polite">
             Loading report…
-          </div>
+          </p>
         </div>
       </section>
     )
@@ -77,9 +81,13 @@ function FoundReportDetails() {
     return (
       <section className="report-details-section section">
         <div className="container">
-          <div className="auth-error" role="alert">
-            {error ?? 'Report not found.'}
-          </div>
+          <StateMessage
+            icon={<AlertIcon />}
+            tone="error"
+            heading="Couldn't load this report"
+            description={error ?? 'Report not found.'}
+            headingLevel="h2"
+          />
           <Link to="/my-found" className="btn btn-secondary report-details-back">
             Back to My Found Reports
           </Link>

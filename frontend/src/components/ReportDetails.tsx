@@ -71,13 +71,13 @@ function ReportDetails({ report, dateLabel, backTo, backLabel, matches }: Report
             <dd>{report.description}</dd>
           </dl>
 
-          <ImageGallery images={report.images} />
+          <ImageGallery images={report.images} itemName={report.itemName} />
 
           <LensMatchResults reportId={report.id} ownPhotoUrl={report.images[0]?.imageUrl} />
 
           {matches.length > 0 && (
             <div className="legacy-matches">
-              <h3>Other possible matches</h3>
+              <h2>Other possible matches</h2>
               <p className="legacy-matches-note">
                 Based on category, location, and date proximity — separate from Lens Match above.
               </p>

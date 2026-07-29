@@ -33,8 +33,13 @@
   color: var(--color-text-muted);
 }
 
-.dashboard-status-error {
-  color: var(--color-danger);
+.dashboard-skeleton-row {
+  height: 76px;
+  border-radius: var(--radius-md);
+}
+
+.dashboard-skeleton-tile {
+  height: 96px;
 }
 
 .dashboard-match-list {
@@ -128,7 +133,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 480px) {
   .dashboard-report-grid {
     grid-template-columns: 1fr;
   }

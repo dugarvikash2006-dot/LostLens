@@ -6,6 +6,8 @@ import type { Suggestion } from '../types/suggestion'
 import LensMatchMark from './LensMatchMark'
 import LensMatchComparisonCard from './LensMatchComparisonCard'
 import ConfidenceRing from './ConfidenceRing'
+import StateMessage from './StateMessage'
+import { AlertIcon, SearchIcon } from './icons'
 import './LensMatchResults.css'
 
 interface LensMatchResultsProps {
@@ -64,7 +66,9 @@ function LensMatchResults({ reportId, ownPhotoUrl }: LensMatchResultsProps) {
   return (
     <section className="lens-match-experience">
       <div className="lens-match-experience-head">
-        <LensMatchMark />
+        <h2>
+          <LensMatchMark />
+        </h2>
       </div>
 
       {isLoading && (
@@ -81,36 +85,20 @@ function LensMatchResults({ reportId, ownPhotoUrl }: LensMatchResultsProps) {
       )}
 
       {!isLoading && error && (
-        <div className="lens-match-state lens-match-state-error" role="alert">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M12 9v4m0 3.5h.01M10.3 3.9 2.6 17.3A1.8 1.8 0 0 0 4.2 20h15.6a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <div>
-            <h3>Lens Match is temporarily unavailable</h3>
-            <p>{error}</p>
-          </div>
-        </div>
+        <StateMessage
+          icon={<AlertIcon />}
+          tone="error"
+          heading="Lens Match is temporarily unavailable"
+          description={error}
+        />
       )}
 
       {!isLoading && !error && suggestions && suggestions.length === 0 && (
-        <div className="lens-match-state">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.6" />
-            <path d="m20 20-3.2-3.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <div>
-            <h3>No matches yet</h3>
-            <p>
-              Lens Match checks automatically every time a new report is added — we&apos;ll
-              show results here the moment one turns up.
-            </p>
-          </div>
-        </div>
+        <StateMessage
+          icon={<SearchIcon />}
+          heading="No matches yet"
+          description="Lens Match checks automatically every time a new report is added — we'll show results here the moment one turns up."
+        />
       )}
 
       {!isLoading && !error && topMatch && (

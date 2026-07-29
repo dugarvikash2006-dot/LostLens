@@ -1,0 +1,42 @@
+.state-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-sunken);
+}
+
+.state-message-icon {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-subtle);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.state-message h2,
+.state-message h3 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  margin-bottom: var(--space-1);
+}
+
+.state-message p {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  max-width: 46ch;
+}
+
+.state-message-action {
+  margin-top: var(--space-4);
+}
+
+.state-message-error {
+  background-color: var(--color-danger-bg);
+}
+
+.state-message-error .state-message-icon {
+  color: var(--color-danger);
+}

@@ -217,7 +217,7 @@
 
 .cta-inner p {
   margin-top: var(--space-3);
-  color: rgba(255, 255, 255, 0.85);
+  color: color-mix(in srgb, var(--color-primary-contrast) 85%, transparent);
   font-size: var(--fs-md);
   max-width: 520px;
   margin-left: auto;
@@ -233,14 +233,14 @@
 
 .btn-on-dark {
   background-color: transparent;
-  border-color: rgba(255, 255, 255, 0.5);
+  border-color: color-mix(in srgb, var(--color-primary-contrast) 50%, transparent);
   color: var(--color-primary-contrast);
 }
 
 .btn-on-dark:hover {
   border-color: var(--color-primary-contrast);
   color: var(--color-primary-contrast);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--color-primary-contrast) 10%, transparent);
 }
 
 /* ---------------- RESPONSIVE ---------------- */

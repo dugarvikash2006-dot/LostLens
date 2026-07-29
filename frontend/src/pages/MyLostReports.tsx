@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { getMyLostReports } from '../api/item.api'
 import { ApiError } from '../api/client'
 import ReportCard from '../components/ReportCard'
+import ReportCardSkeleton from '../components/ReportCardSkeleton'
+import StateMessage from '../components/StateMessage'
+import { AlertIcon, EmptyBoxIcon } from '../components/icons'
 import { useTopMatchScores } from '../hooks/useTopMatchScores'
 import type { ItemReport } from '../types/item'
 import './Reports.css'
@@ -51,21 +54,35 @@ function MyLostReports() {
         </div>
 
         {isLoading && (
-          <div className="reports-state" role="status" aria-live="polite">
-            Loading your reports…
-          </div>
+          <>
+            <div className="reports-grid" aria-hidden="true">
+              <ReportCardSkeleton />
+              <ReportCardSkeleton />
+              <ReportCardSkeleton />
+            </div>
+            <p className="visually-hidden" role="status" aria-live="polite">
+              Loading your reports…
+            </p>
+          </>
         )}
 
         {!isLoading && error && (
-          <div className="auth-error" role="alert">
-            {error}
-          </div>
+          <StateMessage
+            icon={<AlertIcon />}
+            tone="error"
+            heading="Couldn't load your reports"
+            description={error}
+            headingLevel="h2"
+          />
         )}
 
         {!isLoading && !error && reports && reports.length === 0 && (
-          <div className="reports-state">
-            You haven&apos;t reported any lost items yet.
-          </div>
+          <StateMessage
+            icon={<EmptyBoxIcon />}
+            heading="No lost reports yet"
+            description="Once you report something lost, Lens Match starts comparing it against found items automatically."
+            headingLevel="h2"
+          />
         )}
 
         {!isLoading && !error && reports && reports.length > 0 && (

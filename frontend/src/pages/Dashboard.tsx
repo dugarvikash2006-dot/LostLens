@@ -6,6 +6,8 @@ import { getSuggestions } from '../api/suggestion.api'
 import { ApiError } from '../api/client'
 import ConfidenceRing from '../components/ConfidenceRing'
 import LensMatchMark from '../components/LensMatchMark'
+import StateMessage from '../components/StateMessage'
+import { AlertIcon, SearchIcon, EmptyBoxIcon } from '../components/icons'
 import type { ItemReport } from '../types/item'
 import type { Suggestion } from '../types/suggestion'
 import { formatReportDate } from '../utils/formatDate'
@@ -98,23 +100,33 @@ function Dashboard() {
         <div className="dashboard-top">
           <div className="lens-match-panel card">
             <div className="lens-match-panel-head">
-              <LensMatchMark />
+              <h2>
+                <LensMatchMark />
+              </h2>
               {matches.length > 0 && <span className="badge badge-found">{matches.length} new</span>}
             </div>
 
             {isLoading && (
-              <p className="dashboard-status" role="status" aria-live="polite">
-                Checking for new matches…
-              </p>
+              <>
+                <div className="dashboard-match-list" aria-hidden="true">
+                  <div className="skeleton dashboard-skeleton-row" />
+                </div>
+                <p className="visually-hidden" role="status" aria-live="polite">
+                  Checking for new matches…
+                </p>
+              </>
             )}
 
-            {!isLoading && error && <p className="dashboard-status dashboard-status-error">{error}</p>}
+            {!isLoading && error && (
+              <StateMessage icon={<AlertIcon />} tone="error" heading="Couldn't load Lens Match results" description={error} />
+            )}
 
             {!isLoading && !error && matches.length === 0 && (
-              <p className="dashboard-status">
-                No matches yet — Lens Match checks automatically every time you or someone
-                else adds a report.
-              </p>
+              <StateMessage
+                icon={<SearchIcon />}
+                heading="No matches yet"
+                description="Lens Match checks automatically every time you or someone else adds a report."
+              />
             )}
 
             {!isLoading && !error && matches.length > 0 && (
@@ -153,13 +165,20 @@ function Dashboard() {
             <h2 className="dashboard-subheading">My active reports</h2>
 
             {isLoading && (
-              <p className="dashboard-status" role="status" aria-live="polite">
-                Loading your reports…
-              </p>
+              <>
+                <div className="dashboard-report-grid" aria-hidden="true">
+                  <div className="card skeleton dashboard-skeleton-tile" />
+                  <div className="card skeleton dashboard-skeleton-tile" />
+                  <div className="card skeleton dashboard-skeleton-tile" />
+                </div>
+                <p className="visually-hidden" role="status" aria-live="polite">
+                  Loading your reports…
+                </p>
+              </>
             )}
 
             {!isLoading && !error && activeReports.length === 0 && (
-              <p className="dashboard-status">You don&apos;t have any active reports.</p>
+              <StateMessage icon={<EmptyBoxIcon />} heading="No active reports" description="Reports you create will show up here." />
             )}
 
             {!isLoading && !error && activeReports.length > 0 && (

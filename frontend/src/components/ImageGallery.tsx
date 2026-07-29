@@ -4,6 +4,8 @@ import './ImageGallery.css'
 
 interface ImageGalleryProps {
   images: ReportImage[]
+  /** The report's item name, used to give each photo a meaningful accessible name. */
+  itemName?: string
 }
 
 /**
@@ -11,7 +13,7 @@ interface ImageGalleryProps {
  * gallery library — this is deliberately just a grid plus a full-screen
  * overlay, which covers everything the details page needs.
  */
-function ImageGallery({ images }: ImageGalleryProps) {
+function ImageGallery({ images, itemName }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
   // Close on Escape while the lightbox is open.
@@ -32,6 +34,8 @@ function ImageGallery({ images }: ImageGalleryProps) {
     return null
   }
 
+  const subject = itemName ?? 'this report'
+
   return (
     <div className="image-gallery">
       <div className="image-gallery-grid">
@@ -41,9 +45,14 @@ function ImageGallery({ images }: ImageGalleryProps) {
             key={image.id}
             className="image-gallery-thumb"
             onClick={() => setActiveIndex(index)}
-            aria-label={`View image ${index + 1} of ${images.length} larger`}
+            aria-label={`${subject} — photo ${index + 1} of ${images.length}, view larger`}
           >
-            <img src={image.imageUrl} alt="" />
+            {/* Decorative relative to the button above, which already
+                carries the full accessible name (button aria-label
+                takes precedence over this img's alt in the accessible
+                name computation) — empty alt here is correct, not an
+                oversight. */}
+            <img src={image.imageUrl} alt="" className="img-fade-in" />
           </button>
         ))}
       </div>
@@ -53,7 +62,7 @@ function ImageGallery({ images }: ImageGalleryProps) {
           className="image-lightbox"
           role="dialog"
           aria-modal="true"
-          aria-label="Image preview"
+          aria-label={`${subject} — full-size photo`}
           onClick={() => setActiveIndex(null)}
         >
           <button
@@ -66,8 +75,8 @@ function ImageGallery({ images }: ImageGalleryProps) {
           </button>
           <img
             src={images[activeIndex].imageUrl}
-            alt=""
-            className="image-lightbox-image"
+            alt={`${subject} — full-size photo ${activeIndex + 1} of ${images.length}`}
+            className="image-lightbox-image img-fade-in"
             onClick={(event) => event.stopPropagation()}
           />
         </div>

@@ -54,8 +54,8 @@
   position: absolute;
   top: var(--space-5);
   right: var(--space-5);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: none;
   background-color: rgba(255, 255, 255, 0.15);

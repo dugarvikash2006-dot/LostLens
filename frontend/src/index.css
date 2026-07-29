@@ -65,7 +65,7 @@
 
   --color-text: #221d19;
   --color-text-muted: #6e6459;
-  --color-text-subtle: #7d7263;
+  --color-text-subtle: #6d6353;
 
   /* Colour: signature accent — Burnt Terracotta. Reserved for primary
      actions and anything Lens Match — never used for plain UI chrome. */
@@ -281,15 +281,6 @@ select:focus-visible,
   color: var(--color-primary-dark);
 }
 
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-text-muted);
-}
-
-.btn-ghost:hover {
-  color: var(--color-primary-dark);
-}
-
 .btn-lg {
   padding: 0.9rem 1.75rem;
   font-size: 0.97rem;
@@ -468,6 +459,21 @@ select:focus-visible,
   }
   100% {
     background-position: -20% 0;
+  }
+}
+
+/* Shared soft appearance for photos — real or placeholder — wherever
+   a photo slot mounts, rather than popping in abruptly. */
+.img-fade-in {
+  animation: img-fade-in 0.35s ease;
+}
+
+@keyframes img-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

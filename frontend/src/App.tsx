@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -19,6 +19,7 @@ import './App.css'
 
 function AppShell() {
   const { isLoading } = useAuth()
+  const location = useLocation()
 
   // Avoid flashing a logged-out Navbar for a moment before we know
   // whether a stored token is actually valid. Kept intentionally minimal
@@ -36,68 +37,72 @@ function AppShell() {
       <Navbar />
 
       <main className="app-main">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/create-lost"
-            element={
-              <ProtectedRoute>
-                <CreateLostReport />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-reports"
-            element={
-              <ProtectedRoute>
-                <MyLostReports />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/items/:id"
-            element={
-              <ProtectedRoute>
-                <ItemDetails />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/create-found"
-            element={
-              <ProtectedRoute>
-                <CreateFoundReport />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-found"
-            element={
-              <ProtectedRoute>
-                <MyFoundReports />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/found/:id"
-            element={
-              <ProtectedRoute>
-                <FoundReportDetails />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        {/* Keyed by path so each route change remounts this wrapper and
+            replays the fade-in — a subtle page-transition microinteraction. */}
+        <div key={location.pathname} className="page-transition">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/create-lost"
+              element={
+                <ProtectedRoute>
+                  <CreateLostReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-reports"
+              element={
+                <ProtectedRoute>
+                  <MyLostReports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/items/:id"
+              element={
+                <ProtectedRoute>
+                  <ItemDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-found"
+              element={
+                <ProtectedRoute>
+                  <CreateFoundReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-found"
+              element={
+                <ProtectedRoute>
+                  <MyFoundReports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/found/:id"
+              element={
+                <ProtectedRoute>
+                  <FoundReportDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </main>
 
       <Footer />

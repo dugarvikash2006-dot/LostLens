@@ -1,3 +1,4 @@
+import { EmptyBoxIcon } from './icons'
 import './ObjectPortrait.css'
 
 // Temporary, high-quality placeholder photography for the eight items
@@ -180,7 +181,7 @@ function ObjectPortrait({ item, src, alt, className = '' }: ObjectPortraitProps)
   if (src) {
     return (
       <div className={`op-frame ${className}`}>
-        <img src={src} alt={alt ?? (item ? LABELS[item] : '')} />
+        <img src={src} alt={alt ?? (item ? LABELS[item] : '')} className="img-fade-in" />
       </div>
     )
   }
@@ -191,11 +192,7 @@ function ObjectPortrait({ item, src, alt, className = '' }: ObjectPortraitProps)
     // illustrations (which assume a specific, known object).
     return (
       <div className={`op-frame op-frame-empty ${className}`} role="img" aria-label={alt ?? 'No photo available'}>
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.4" />
-          <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="1.4" />
-          <path d="M8 6l1.1-2h5.8L16 6" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-        </svg>
+        <EmptyBoxIcon />
         <span>No photo</span>
       </div>
     )

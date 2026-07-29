@@ -120,7 +120,9 @@ function Home() {
         <div className="container">
           <div className="lens-match-teaser card">
             <div className="lens-match-teaser-head">
-              <LensMatchMark />
+              <h2>
+                <LensMatchMark />
+              </h2>
               <span className="badge badge-found">91% match</span>
             </div>
             <div className="lens-match-teaser-body">
