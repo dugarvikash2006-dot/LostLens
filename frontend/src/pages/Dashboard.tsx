@@ -123,7 +123,7 @@ function Dashboard() {
                   <Link
                     key={match.matchId}
                     to={match.reportType === 'LOST' ? `/items/${match.reportId}` : `/found/${match.reportId}`}
-                    className="dashboard-match-row"
+                    className="lens-match-row"
                   >
                     <div>
                       <h3>{match.itemName}</h3>

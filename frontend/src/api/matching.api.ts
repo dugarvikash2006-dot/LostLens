@@ -1,8 +1,10 @@
 import { apiRequest } from './client'
 import { getStoredToken } from '../utils/tokenStorage'
+import type { ReportType } from '../types/item'
 
-interface MatchResult {
+export interface MatchResult {
   reportId: string
+  reportType: ReportType
   title: string
   category: string
   location: string

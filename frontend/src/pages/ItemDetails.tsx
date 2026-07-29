@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getLostReportById } from '../api/item.api'
+import { getMatches } from '../api/matching.api'
+import type { MatchResult } from '../api/matching.api'
 import { ApiError } from '../api/client'
 import ReportDetails from '../components/ReportDetails'
 import type { ItemReport } from '../types/item'
@@ -10,6 +12,7 @@ function ItemDetails() {
   const { id } = useParams<{ id: string }>()
 
   const [report, setReport] = useState<ItemReport | null>(null)
+  const [matches, setMatches] = useState<MatchResult[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -26,6 +29,18 @@ function ItemDetails() {
         const response = await getLostReportById(id)
         if (!cancelled) {
           setReport(response.data.report)
+        }
+
+        // Kept isolated from the report fetch above: a legacy-matching
+        // hiccup should never look like "this report failed to load"
+        // when the report itself loaded fine.
+        try {
+          const matchResults = await getMatches(response.data.report.id)
+          if (!cancelled) {
+            setMatches(matchResults)
+          }
+        } catch {
+          // Non-critical — the report still displays with no legacy matches.
         }
       } catch (err) {
         if (cancelled) return
@@ -75,12 +90,12 @@ function ItemDetails() {
 
   return (
     <ReportDetails
-  report={report}
-  matches={[]}
-  dateLabel="Date Lost"
-  backTo="/my-reports"
-  backLabel="Back to My Lost Reports"
-/>
+      report={report}
+      matches={matches}
+      dateLabel="Date Lost"
+      backTo="/my-reports"
+      backLabel="Back to My Lost Reports"
+    />
   )
 }
 

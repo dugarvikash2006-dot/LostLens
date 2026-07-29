@@ -135,25 +135,22 @@
   transform: scale(1.04);
 }
 
-.report-card-photo.op-frame {
+.report-card-photo {
   position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3.6;
+}
+
+.report-card-photo-frame.op-frame {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
   border-radius: 0;
   box-shadow: none;
-  aspect-ratio: 4 / 3.6;
 }
 
 .report-card-photo img {
   transition: transform 0.3s ease;
-}
-
-.report-card-no-photo {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--fs-xs);
-  color: var(--color-text-subtle);
 }
 
 .report-card-status {

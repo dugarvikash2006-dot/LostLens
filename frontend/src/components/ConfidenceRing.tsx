@@ -1,13 +1,19 @@
+import { useEffect, useState } from 'react'
+
 // LostLens signature visual: a circular indicator for a Lens Match
 // confidence score. Built once here so every place a match score
 // appears (Dashboard, listings, Report Details, the Lens Match
 // experience) renders identically — no duplicated ring markup/CSS.
 //
-// The stroke-dashoffset transition is already wired up in index.css
-// (`.ring-fill`), so this component is ready for the Phase 5 "animate
-// on appearance" treatment without any structural change: mounting it
-// with an initial 0% and updating to the real score on the next tick
-// (or via a CSS animation keyed on mount) will animate for free.
+// The ring fills in on mount rather than appearing already-full: it
+// renders at 0% for one frame, then transitions to the real score via
+// the existing `.ring-fill` CSS transition (index.css). The percentage
+// number itself never animates — it shows the final value immediately,
+// so a screen reader (and a sighted user glancing quickly) never sees
+// a transiently wrong number, only the ring's fill is decorative
+// motion. `prefers-reduced-motion` is already handled globally (the
+// transition duration collapses to ~0), so no extra branching is
+// needed here for that.
 
 const CIRCUMFERENCE = 2 * Math.PI * 28
 
@@ -21,7 +27,18 @@ export interface ConfidenceRingProps {
 
 function ConfidenceRing({ score, size = 'md', label }: ConfidenceRingProps) {
   const clamped = Math.max(0, Math.min(100, Math.round(score)))
-  const offset = CIRCUMFERENCE * (1 - clamped / 100)
+  const [revealed, setRevealed] = useState(false)
+
+  useEffect(() => {
+    // Mount at 0%, then flip on the next frame so the browser paints
+    // the empty ring first and the fill transition actually plays,
+    // rather than mounting already at its final value.
+    const frame = requestAnimationFrame(() => setRevealed(true))
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
+  const displayPct = revealed ? clamped : 0
+  const offset = CIRCUMFERENCE * (1 - displayPct / 100)
 
   return (
     <div

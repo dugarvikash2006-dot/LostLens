@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getFoundReportById } from '../api/item.api'
 import { getMatches } from '../api/matching.api'
+import type { MatchResult } from '../api/matching.api'
 import { ApiError } from '../api/client'
 import ReportDetails from '../components/ReportDetails'
 import type { ItemReport } from '../types/item'
@@ -11,7 +12,7 @@ function FoundReportDetails() {
   const { id } = useParams<{ id: string }>()
 
   const [report, setReport] = useState<ItemReport | null>(null)
-  const [matches, setMatches] = useState<any[]>([])
+  const [matches, setMatches] = useState<MatchResult[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -26,15 +27,21 @@ function FoundReportDetails() {
 
       try {
         const response = await getFoundReportById(id)
-        
         if (!cancelled) {
           setReport(response.data.report)
         }
-        const matchResults = await getMatches(response.data.report.id)
 
-if (!cancelled) {
-  setMatches(matchResults)
-}
+        // Kept isolated from the report fetch above: a legacy-matching
+        // hiccup should never look like "this report failed to load"
+        // when the report itself loaded fine.
+        try {
+          const matchResults = await getMatches(response.data.report.id)
+          if (!cancelled) {
+            setMatches(matchResults)
+          }
+        } catch {
+          // Non-critical — the report still displays with no legacy matches.
+        }
       } catch (err) {
         if (cancelled) return
         // Covers 403 (not the owner) and 404 (doesn't exist) alike —
@@ -83,12 +90,12 @@ if (!cancelled) {
 
   return (
     <ReportDetails
-  report={report}
-  matches={matches}
-  dateLabel="Date Found"
-  backTo="/my-found"
-  backLabel="Back to My Found Reports"
-/>
+      report={report}
+      matches={matches}
+      dateLabel="Date Found"
+      backTo="/my-found"
+      backLabel="Back to My Found Reports"
+    />
   )
 }
 

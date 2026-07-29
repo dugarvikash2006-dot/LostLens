@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import type { ItemReport } from '../types/item'
+import type { MatchResult } from '../api/matching.api'
 import { formatReportDate } from '../utils/formatDate'
 import ImageGallery from './ImageGallery'
-import AiSuggestions from './AiSuggestions'
+import LensMatchResults from './LensMatchResults'
+import './LegacyMatches.css'
 import '../pages/Reports.css'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -20,15 +22,20 @@ interface ReportDetailsProps {
   /** Where "Back to My Reports" / "Back to My Found Reports" goes */
   backTo: string
   backLabel: string
-  matches: any[]
+  /** Results from the legacy rule-based matching endpoint (category/location/date
+   *  heuristic) — kept, but deliberately secondary to Lens Match below. */
+  matches: MatchResult[]
 }
 
 /**
  * Shared full-detail view used by both the Lost and Found item details
- * pages — identical layout, just different wording for the date field
- * and the back-link.
+ * pages. Lens Match is the primary, most prominent section here — the
+ * legacy rule-based matches are still shown (that data/endpoint is
+ * unchanged), just visually secondary, matching the actual difference
+ * in what each one is: one is the product's centerpiece, the other is
+ * an older heuristic.
  */
-function ReportDetails({ report, dateLabel, backTo, backLabel, matches, }: ReportDetailsProps) {
+function ReportDetails({ report, dateLabel, backTo, backLabel, matches }: ReportDetailsProps) {
   return (
     <section className="report-details-section section">
       <div className="container">
@@ -65,83 +72,38 @@ function ReportDetails({ report, dateLabel, backTo, backLabel, matches, }: Repor
           </dl>
 
           <ImageGallery images={report.images} />
+
+          <LensMatchResults reportId={report.id} ownPhotoUrl={report.images[0]?.imageUrl} />
+
           {matches.length > 0 && (
-  <div className="report-details-card card" style={{ marginTop: '1.5rem' }}>
-    <h2>Possible Matches</h2>
+            <div className="legacy-matches">
+              <h3>Other possible matches</h3>
+              <p className="legacy-matches-note">
+                Based on category, location, and date proximity — separate from Lens Match above.
+              </p>
 
-    {matches.map((match) => (
-      <Link
-  key={match.reportId}
-  to={
-    match.reportType === 'LOST'
-      ? `/items/${match.reportId}`
-      : `/found/${match.reportId}`
-  }
-  style={{
-    textDecoration: 'none',
-    color: 'inherit',
-    display: 'block',
-  }}
->
-        <div
-  style={{
-    display: 'flex',
-    gap: '1rem',
-    alignItems: 'center',
-  }}
->
-  {match.thumbnail ? (
-    <img
-      src={match.thumbnail}
-      alt={match.title}
-      style={{
-        width: '90px',
-        height: '90px',
-        objectFit: 'cover',
-        borderRadius: '8px',
-      }}
-    />
-  ) : (
-    <div
-      style={{
-        width: '90px',
-        height: '90px',
-        borderRadius: '8px',
-        background: '#eee',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      No Image
-    </div>
-  )}
-
-  <div>
-    <h3>{match.title}</h3>
-
-    <p>
-      <strong>Match Score:</strong> {match.score}
-    </p>
-
-    <p>
-      <strong>Location:</strong> {match.location}
-    </p>
-  </div>
-</div>
-
-
-        <ul>
-          {match.reasons.map((reason: string) => (
-            <li key={reason}>{reason}</li>
-          ))}
-        </ul>
-      </Link>
-    ))}
-  </div>
-)}
-
-          <AiSuggestions reportId={report.id} />
+              <div className="legacy-matches-list">
+                {matches.map((match) => (
+                  <Link
+                    key={match.reportId}
+                    to={match.reportType === 'LOST' ? `/items/${match.reportId}` : `/found/${match.reportId}`}
+                    className="legacy-match-row"
+                  >
+                    {match.thumbnail ? (
+                      <img src={match.thumbnail} alt="" className="legacy-match-thumb" />
+                    ) : (
+                      <span className="legacy-match-thumb legacy-match-thumb-empty" aria-hidden="true" />
+                    )}
+                    <div className="legacy-match-info">
+                      <h4>{match.title}</h4>
+                      <p>{match.location}</p>
+                    </div>
+                    <span className="legacy-match-score mono">{match.score}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           <Link to={backTo} className="btn btn-secondary report-details-back">
             {backLabel}

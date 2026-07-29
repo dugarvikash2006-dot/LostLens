@@ -1,0 +1,193 @@
+.lens-match-experience {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.lens-match-experience-head {
+  margin-bottom: var(--space-4);
+}
+
+/* ---- States (loading / error / empty) ---- */
+
+.lens-match-skeleton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.lens-match-skeleton-photo {
+  flex: 1;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+}
+
+.lens-match-skeleton-ring {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lens-match-state {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-sunken);
+}
+
+.lens-match-state svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-subtle);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.lens-match-state h3 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  margin-bottom: 4px;
+}
+
+.lens-match-state p {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  max-width: 46ch;
+}
+
+.lens-match-state-error {
+  background-color: var(--color-danger-bg);
+}
+
+.lens-match-state-error svg {
+  color: var(--color-danger);
+}
+
+/* ---- Hero comparison ---- */
+
+.lens-match-comparison {
+  padding: var(--space-6);
+}
+
+.lens-match-comparison-photos {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.lens-match-comparison-photo {
+  flex: 1;
+  min-width: 0;
+}
+
+.lens-match-comparison-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.lens-match-comparison-line {
+  width: 2px;
+  height: 28px;
+  background-color: var(--color-border-strong);
+}
+
+.lens-match-comparison-info {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.lens-match-comparison-info h3 {
+  font-size: var(--fs-lg);
+  margin: var(--space-2) 0 4px;
+}
+
+.lens-match-comparison-info > div:first-child p {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+}
+
+.lens-match-comparison-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ---- Other candidates (compact list) ---- */
+
+.lens-match-other {
+  margin-top: var(--space-5);
+}
+
+.lens-match-other-heading {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.lens-match-other-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 720px) {
+  .lens-match-comparison-info {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Below this width, a horizontal row can't fit two photos plus the
+   ring at its full prominent size without squeezing everything. Stack
+   vertically instead — every photo stays large (image-first) and the
+   ring keeps its full size (signature-visual prominence) — rather than
+   shrinking either to make a row fit. */
+@media (max-width: 560px) {
+  .lens-match-comparison {
+    padding: var(--space-4);
+  }
+
+  .lens-match-comparison-photos {
+    flex-direction: column;
+  }
+
+  .lens-match-comparison-photo {
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .lens-match-comparison-ring {
+    flex-direction: row;
+  }
+
+  .lens-match-comparison-line {
+    width: 28px;
+    height: 2px;
+  }
+
+  .lens-match-skeleton {
+    flex-direction: column;
+  }
+
+  .lens-match-skeleton-photo {
+    width: 100%;
+    max-width: 260px;
+  }
+}

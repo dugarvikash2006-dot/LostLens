@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import type { ItemReport } from '../types/item'
 import { formatReportDate } from '../utils/formatDate'
 import ConfidenceRing from './ConfidenceRing'
-import '../components/ObjectPortrait.css'
+import ObjectPortrait from './ObjectPortrait'
 import '../pages/Reports.css'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -37,12 +37,8 @@ function ReportCard({ report, to, dateLabel, topMatchScore }: ReportCardProps) {
 
   return (
     <Link to={to} className="report-card card">
-      <div className="report-card-photo op-frame">
-        {photo ? (
-          <img src={photo} alt="" />
-        ) : (
-          <span className="report-card-no-photo">No photo</span>
-        )}
+      <div className="report-card-photo">
+        <ObjectPortrait src={photo} alt="" className="report-card-photo-frame" />
         <span className={`badge badge-status badge-status-${report.status} report-card-status`}>
           {STATUS_LABELS[report.status] ?? report.status}
         </span>

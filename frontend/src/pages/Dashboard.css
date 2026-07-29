@@ -43,35 +43,9 @@
   gap: var(--space-3);
 }
 
-.dashboard-match-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.dashboard-match-row:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.dashboard-match-row h3 {
-  font-size: var(--fs-md);
-}
-
-.dashboard-match-row p {
-  margin-top: 2px;
-  font-size: var(--fs-xs);
-  color: var(--color-text-subtle);
-  font-family: var(--font-sans);
-}
+/* Row styling itself now lives in the shared .lens-match-row utility
+   (index.css) — reused here and by the Lens Match Experience's
+   secondary candidates list, rather than duplicated per page. */
 
 .dashboard-actions {
   display: flex;

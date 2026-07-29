@@ -23,7 +23,9 @@ export type ObjectKey =
   | 'umbrella'
 
 interface ObjectPortraitProps {
-  item: ObjectKey
+  /** One of the eight curated illustrations. Omit for real report data
+   *  with no known photo — renders a generic neutral placeholder instead. */
+  item?: ObjectKey
   /** A real photo URL. When provided, replaces the illustration with zero layout change. */
   src?: string
   alt?: string
@@ -178,7 +180,23 @@ function ObjectPortrait({ item, src, alt, className = '' }: ObjectPortraitProps)
   if (src) {
     return (
       <div className={`op-frame ${className}`}>
-        <img src={src} alt={alt ?? LABELS[item]} />
+        <img src={src} alt={alt ?? (item ? LABELS[item] : '')} />
+      </div>
+    )
+  }
+
+  if (!item) {
+    // Real report data with no photo of its own — a generic neutral
+    // placeholder, distinct from the eight curated marketing
+    // illustrations (which assume a specific, known object).
+    return (
+      <div className={`op-frame op-frame-empty ${className}`} role="img" aria-label={alt ?? 'No photo available'}>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.4" />
+          <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="1.4" />
+          <path d="M8 6l1.1-2h5.8L16 6" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+        </svg>
+        <span>No photo</span>
       </div>
     )
   }
