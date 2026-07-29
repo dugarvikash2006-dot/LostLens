@@ -1,17 +1,11 @@
 import { Link } from 'react-router-dom'
 import type { Suggestion } from '../types/suggestion'
+import { STATUS_LABELS } from '../types/item'
 import ObjectPortrait from './ObjectPortrait'
 import ConfidenceRing from './ConfidenceRing'
 import { formatReportDate } from '../utils/formatDate'
+import { getConfidenceExplanation } from '../utils/confidence'
 import './LensMatchResults.css'
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: 'Open',
-  POTENTIAL_MATCH: 'Potential Match',
-  CLAIM_PENDING: 'Claim Pending',
-  RETURNED: 'Returned',
-  CLOSED: 'Closed',
-}
 
 interface LensMatchComparisonCardProps {
   suggestion: Suggestion
@@ -54,6 +48,12 @@ function LensMatchComparisonCard({ suggestion, ownPhotoUrl }: LensMatchCompariso
           className="lens-match-comparison-photo"
         />
       </div>
+
+      {suggestion.score !== null && (
+        <p className="lens-match-confidence-note">
+          <strong>{Math.round(suggestion.score)}% Match</strong> — {getConfidenceExplanation(suggestion.score)}
+        </p>
+      )}
 
       <div className="lens-match-comparison-info">
         <div>

@@ -19,7 +19,7 @@ function Footer() {
           <div className="footer-links-group">
             <span className="footer-links-title">Product</span>
             <Link to="/">Home</Link>
-            <span className="footer-link-disabled">Browse Items</span>
+            <Link to="/browse">Browse Items</Link>
             <a href="/#how-it-works">How It Works</a>
           </div>
 

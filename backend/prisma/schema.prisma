@@ -43,6 +43,21 @@ enum ReportStatus {
   CLAIM_PENDING
   RETURNED
   CLOSED
+  // Phase 8: the terminal "happy path" state — the reporter confirmed
+  // they got the item back. Added rather than reusing RETURNED/CLOSED
+  // so existing data/behavior tied to those values is untouched.
+  REUNITED
+}
+
+// Phase 8: optional, reporter-supplied context for how a reunion came
+// about — purely informational (analytics/product-feedback), never
+// read by any matching or ranking logic.
+enum ReunionMethod {
+  AI_MATCH
+  CONTACTED_ME
+  MANUAL_SEARCH
+  CAMPUS_SECURITY
+  FRIEND
 }
 
 enum MatchStatus {
@@ -116,12 +131,32 @@ model ItemReport {
   location            String
   locationDetails     String?
 
+  // Phase 7: where a FOUND item can currently be picked up (e.g. "Library
+  // Reception"). Left null for LOST reports and unused there — the API
+  // only accepts it on the FOUND creation endpoint, but it lives on the
+  // shared model rather than a separate one, same as the other
+  // report-type-specific optional fields above (approximateTime, etc).
+  currentLocation     String?
+
+  // Phase 7: optional contact details so another user viewing this report
+  // (LOST or FOUND) can reach the reporter directly. All three are
+  // independently optional — a reporter may give only a phone, only an
+  // email, both, or neither.
+  contactName         String?
+  contactPhone        String?
+  contactEmail        String?
+
   // Optional for now; storage/upload (e.g. Cloudinary) is a later phase.
   // Keeping this as a plain URL string lets that be swapped in later
   // without a schema change.
   imageUrl            String?
 
   status              ReportStatus @default(OPEN)
+  // Phase 8: when this report's status became REUNITED. Null until then.
+  reunitedAt          DateTime?
+  // Phase 8: optional, only ever set alongside/after REUNITED — see
+  // ReunionMethod above.
+  reunionMethod       ReunionMethod?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 

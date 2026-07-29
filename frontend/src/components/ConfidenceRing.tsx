@@ -23,19 +23,28 @@ export interface ConfidenceRingProps {
   size?: 'sm' | 'md' | 'lg'
   /** Overrides the default "N% match confidence" accessible label. */
   label?: string
+  /**
+   * Gates when the fill begins. Defaults to true (fill on mount, the
+   * original behavior every existing usage relies on). Pass false to
+   * hold the ring at 0% until a caller-controlled moment — e.g. a step
+   * in an animated sequence — flips it to true.
+   */
+  startFill?: boolean
 }
 
-function ConfidenceRing({ score, size = 'md', label }: ConfidenceRingProps) {
+function ConfidenceRing({ score, size = 'md', label, startFill = true }: ConfidenceRingProps) {
   const clamped = Math.max(0, Math.min(100, Math.round(score)))
   const [revealed, setRevealed] = useState(false)
 
   useEffect(() => {
+    if (!startFill) return
+
     // Mount at 0%, then flip on the next frame so the browser paints
     // the empty ring first and the fill transition actually plays,
     // rather than mounting already at its final value.
     const frame = requestAnimationFrame(() => setRevealed(true))
     return () => cancelAnimationFrame(frame)
-  }, [])
+  }, [startFill])
 
   const displayPct = revealed ? clamped : 0
   const offset = CIRCUMFERENCE * (1 - displayPct / 100)

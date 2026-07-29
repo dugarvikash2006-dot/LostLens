@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ObjectPortrait from '../components/ObjectPortrait'
 import ConfidenceRing from '../components/ConfidenceRing'
 import LensMatchMark from '../components/LensMatchMark'
+import HeroStory from '../components/HeroStory'
 import { useScrollReveal } from '../hooks/useScrollReveal'
+import { getItemStats } from '../api/item.api'
+import type { ItemStats } from '../types/item'
 import './Home.css'
 
 // Landing page (Phase 5 redesign). Marketing content only — no
@@ -21,11 +24,6 @@ const heroWords = [
   { text: 'finds', accent: false },
   { text: 'it.', accent: false },
 ]
-
-// Max mouse-parallax offset for the hero object photos, in pixels.
-// Kept small deliberately (spec: 3-6px) so it reads as a subtle depth
-// cue rather than motion that could bother sensitive users.
-const PARALLAX_MAX_PX = 6
 
 const steps = [
   {
@@ -76,45 +74,30 @@ const reunions = [
 ]
 
 function Home() {
-  const heroVisualRef = useRef<HTMLDivElement>(null)
+  const { ref: statsRef, isVisible: statsVisible } = useScrollReveal<HTMLElement>()
   const { ref: howItWorksRef, isVisible: howItWorksVisible } = useScrollReveal<HTMLElement>()
   const { ref: lensMatchRef, isVisible: lensMatchVisible } = useScrollReveal<HTMLElement>()
   const { ref: recentItemsRef, isVisible: recentItemsVisible } = useScrollReveal<HTMLElement>()
   const { ref: ctaRef, isVisible: ctaVisible } = useScrollReveal<HTMLElement>()
 
+  const [stats, setStats] = useState<ItemStats | null>(null)
+
   useEffect(() => {
-    const node = heroVisualRef.current
-    if (!node) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let cancelled = false
 
-    let frame = 0
-
-    const handleMove = (event: MouseEvent) => {
-      const rect = node.getBoundingClientRect()
-      const relX = (event.clientX - (rect.left + rect.width / 2)) / (rect.width / 2)
-      const relY = (event.clientY - (rect.top + rect.height / 2)) / (rect.height / 2)
-
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        const x = Math.max(-1, Math.min(1, relX)) * PARALLAX_MAX_PX
-        const y = Math.max(-1, Math.min(1, relY)) * PARALLAX_MAX_PX
-        node.style.setProperty('--parallax-x', `${x.toFixed(1)}px`)
-        node.style.setProperty('--parallax-y', `${y.toFixed(1)}px`)
+    getItemStats()
+      .then((response) => {
+        if (!cancelled) {
+          setStats(response.data.stats)
+        }
       })
-    }
+      .catch(() => {
+        // Non-critical — the rest of the landing page works fine
+        // without these; just skip rendering the section.
+      })
 
-    const handleLeave = () => {
-      cancelAnimationFrame(frame)
-      node.style.setProperty('--parallax-x', '0px')
-      node.style.setProperty('--parallax-y', '0px')
-    }
-
-    node.addEventListener('mousemove', handleMove)
-    node.addEventListener('mouseleave', handleLeave)
     return () => {
-      cancelAnimationFrame(frame)
-      node.removeEventListener('mousemove', handleMove)
-      node.removeEventListener('mouseleave', handleLeave)
+      cancelled = true
     }
   }, [])
 
@@ -150,22 +133,41 @@ function Home() {
             </div>
           </div>
 
-          <div
-            className="hero-visual hero-enter"
-            style={{ animationDelay: '0.5s' }}
-            ref={heroVisualRef}
-          >
-            <div className="hero-visual-row">
-              <ObjectPortrait item="water-bottle" className="hero-portrait hero-portrait-a" />
-              <div className="hero-visual-ring">
-                <ConfidenceRing score={91} size="lg" />
-              </div>
-              <ObjectPortrait item="water-bottle" className="hero-portrait hero-portrait-b" />
-            </div>
-            <p className="hero-visual-caption">Reunited in 2 days · Sports Complex</p>
+          <div className="hero-visual hero-enter" style={{ animationDelay: '0.5s' }}>
+            <HeroStory />
           </div>
         </div>
       </section>
+
+      {/* ---------------- STATS ---------------- */}
+      {stats && (
+        <section
+          className={`section stats-section scroll-reveal${statsVisible ? ' is-visible' : ''}`}
+          ref={statsRef}
+          aria-label="LostLens statistics"
+        >
+          <div className="container">
+            <div className="stats-grid">
+              <div className="stat-tile card">
+                <p className="stat-value mono">{stats.itemsReunited}</p>
+                <p className="stat-label">Items Reunited</p>
+              </div>
+              <div className="stat-tile card">
+                <p className="stat-value mono">{stats.successRate}%</p>
+                <p className="stat-label">Success Rate</p>
+              </div>
+              <div className="stat-tile card">
+                <p className="stat-value mono">{stats.todaysReports}</p>
+                <p className="stat-label">Today&apos;s Reports</p>
+              </div>
+              <div className="stat-tile card">
+                <p className="stat-value mono">{stats.potentialMatches}</p>
+                <p className="stat-label">Potential Matches</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---------------- HOW IT WORKS ---------------- */}
       <section

@@ -12,8 +12,10 @@ import ItemDetails from './pages/ItemDetails'
 import CreateFoundReport from './pages/CreateFoundReport'
 import MyFoundReports from './pages/MyFoundReports'
 import FoundReportDetails from './pages/FoundReportDetails'
+import Browse from './pages/Browse'
 import NotFound from './pages/NotFound'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import { useAuth } from './context/useAuth'
 import './App.css'
 
@@ -100,6 +102,14 @@ function AppShell() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/browse"
+              element={
+                <ProtectedRoute>
+                  <Browse />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
@@ -113,7 +123,9 @@ function AppShell() {
 function App() {
   return (
     <AuthProvider>
-      <AppShell />
+      <ToastProvider>
+        <AppShell />
+      </ToastProvider>
     </AuthProvider>
   )
 }

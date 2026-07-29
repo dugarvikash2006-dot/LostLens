@@ -9,6 +9,7 @@ import LensMatchMark from '../components/LensMatchMark'
 import StateMessage from '../components/StateMessage'
 import { AlertIcon, SearchIcon, EmptyBoxIcon } from '../components/icons'
 import type { ItemReport } from '../types/item'
+import { STATUS_LABELS } from '../types/item'
 import type { Suggestion } from '../types/suggestion'
 import { formatReportDate } from '../utils/formatDate'
 import './Dashboard.css'
@@ -23,14 +24,6 @@ import './Dashboard.css'
 interface RecentMatch extends Suggestion {
   sourceReportId: string
   sourceReportName: string
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: 'Open',
-  POTENTIAL_MATCH: 'Potential Match',
-  CLAIM_PENDING: 'Claim Pending',
-  RETURNED: 'Returned',
-  CLOSED: 'Closed',
 }
 
 function Dashboard() {
@@ -178,7 +171,16 @@ function Dashboard() {
             )}
 
             {!isLoading && !error && activeReports.length === 0 && (
-              <StateMessage icon={<EmptyBoxIcon />} heading="No active reports" description="Reports you create will show up here." />
+              <StateMessage
+                icon={<EmptyBoxIcon />}
+                heading="No active reports"
+                description="Reports you create will show up here."
+                action={
+                  <Link to="/create-lost" className="btn btn-primary">
+                    Create a Report
+                  </Link>
+                }
+              />
             )}
 
             {!isLoading && !error && activeReports.length > 0 && (

@@ -63,6 +63,22 @@
   background-color: var(--color-border-strong);
 }
 
+/* Phase 9: keeps the confidence score honest — always paired with a
+   plain-language explanation of what the number does (and doesn't) mean. */
+.lens-match-confidence-note {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.lens-match-confidence-note strong {
+  color: var(--color-text);
+}
+
 .lens-match-comparison-info {
   display: flex;
   align-items: flex-end;

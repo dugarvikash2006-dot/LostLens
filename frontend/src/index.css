@@ -281,6 +281,40 @@ select:focus-visible,
   color: var(--color-primary-dark);
 }
 
+/* Reserved for a destructive action that needs its own visual weight
+   (currently: deleting a report) — an outline treatment like
+   .btn-secondary rather than a solid fill, so it doesn't compete with
+   .btn-primary for attention on the same screen. */
+.btn-danger {
+  background-color: var(--color-surface);
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 35%, transparent);
+}
+
+.btn-danger:hover {
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+
+/* A prominent but non-destructive action (currently: marking a report
+   reunited) — same outline treatment as .btn-danger, just the app's
+   success color instead of its danger one. */
+.btn-success {
+  background-color: var(--color-surface);
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
+}
+
+.btn-success:hover {
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+
+.btn-success svg {
+  width: 16px;
+  height: 16px;
+}
+
 .btn-lg {
   padding: 0.9rem 1.75rem;
   font-size: 0.97rem;
@@ -301,11 +335,17 @@ select:focus-visible,
 .badge {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   padding: 0.25rem 0.625rem;
   border-radius: var(--radius-pill);
   font-size: var(--fs-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.badge svg {
+  width: 12px;
+  height: 12px;
 }
 
 .badge-lost {

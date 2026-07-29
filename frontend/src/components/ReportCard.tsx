@@ -1,17 +1,10 @@
 import { Link } from 'react-router-dom'
 import type { ItemReport } from '../types/item'
+import { STATUS_LABELS, STATUS_EXPLANATIONS } from '../types/item'
 import { formatReportDate } from '../utils/formatDate'
 import ConfidenceRing from './ConfidenceRing'
 import ObjectPortrait from './ObjectPortrait'
 import '../pages/Reports.css'
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: 'Open',
-  POTENTIAL_MATCH: 'Potential Match',
-  CLAIM_PENDING: 'Claim Pending',
-  RETURNED: 'Returned',
-  CLOSED: 'Closed',
-}
 
 interface ReportCardProps {
   report: ItemReport
@@ -39,7 +32,10 @@ function ReportCard({ report, to, dateLabel, topMatchScore }: ReportCardProps) {
     <Link to={to} className="report-card card">
       <div className="report-card-photo">
         <ObjectPortrait src={photo} alt="" className="report-card-photo-frame" />
-        <span className={`badge badge-status badge-status-${report.status} report-card-status`}>
+        <span
+          className={`badge badge-status badge-status-${report.status} report-card-status`}
+          title={STATUS_EXPLANATIONS[report.status]}
+        >
           {STATUS_LABELS[report.status] ?? report.status}
         </span>
         {typeof topMatchScore === 'number' && (

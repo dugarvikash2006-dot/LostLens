@@ -81,6 +81,11 @@ function MyLostReports() {
             icon={<EmptyBoxIcon />}
             heading="No lost reports yet"
             description="Once you report something lost, Lens Match starts comparing it against found items automatically."
+            action={
+              <Link to="/create-lost" className="btn btn-primary">
+                Report a Lost Item
+              </Link>
+            }
             headingLevel="h2"
           />
         )}

@@ -65,14 +65,11 @@ function Navbar() {
               <NavLink to="/my-found" className="navbar-link">
                 My Found Reports
               </NavLink>
+              <NavLink to="/browse" className="navbar-link">
+                Browse Items
+              </NavLink>
             </>
           )}
-          <span
-            className="navbar-link navbar-link-disabled"
-            title="Browse Items is coming soon"
-          >
-            Browse Items
-          </span>
           <a href="/#how-it-works" className="navbar-link" onClick={handleHowItWorksClick}>
             How It Works
           </a>

@@ -14,6 +14,10 @@ function CreateFoundReport() {
       location: values.location,
       dateFound: values.date,
       images: values.images,
+      currentLocation: values.currentLocation || undefined,
+      contactName: values.contactName || undefined,
+      contactPhone: values.contactPhone || undefined,
+      contactEmail: values.contactEmail || undefined,
     })
     navigate('/my-found')
   }
@@ -23,6 +27,7 @@ function CreateFoundReport() {
       heading="Report a Found Item"
       subheading="Fill in the details below to help reunite this item with its owner."
       dateLabel="Date Found"
+      showCurrentLocation
       submitLabel="Submit Report"
       submittingLabel="Submitting…"
       onSubmit={handleSubmit}

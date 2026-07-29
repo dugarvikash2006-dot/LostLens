@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../api/client'
-import { CATEGORY_OPTIONS } from '../types/item'
+import { CATEGORY_OPTIONS, CATEGORY_LABELS } from '../types/item'
 import type { Category, ImageReference } from '../types/item'
 import ImageUploader from './ImageUploader'
+import { CheckIcon } from './icons'
 import '../pages/Auth.css'
 import '../pages/Reports.css'
+import './ReportQuality.css'
 
 export interface ReportFormValues {
   title: string
@@ -14,6 +16,10 @@ export interface ReportFormValues {
   location: string
   date: string
   images: ImageReference[]
+  contactName: string
+  contactPhone: string
+  contactEmail: string
+  currentLocation: string
 }
 
 interface ReportFormErrors {
@@ -22,6 +28,8 @@ interface ReportFormErrors {
   category?: string
   location?: string
   date?: string
+  contactPhone?: string
+  contactEmail?: string
 }
 
 interface ReportFormProps {
@@ -29,32 +37,33 @@ interface ReportFormProps {
   subheading: string
   /** e.g. "Date Lost" or "Date Found" */
   dateLabel: string
+  /** Only Found reports collect a pickup location. */
+  showCurrentLocation?: boolean
   submitLabel: string
   submittingLabel: string
   onSubmit: (values: ReportFormValues) => Promise<void>
 }
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  ELECTRONICS: 'Electronics',
-  ACCESSORIES: 'Accessories',
-  BAGS: 'Bags',
-  DOCUMENTS: 'Documents',
-  KEYS: 'Keys',
-  CLOTHING: 'Clothing',
-  BOOKS: 'Books',
-  OTHER: 'Other',
-}
+// Lenient on purpose — "basic formatting" per the product spec, not full
+// E.164 validation. Mirrors backend/src/validators/item.validator.ts.
+const PHONE_REGEX = /^[0-9+\-\s()]{7,20}$/
+// Mirrors the email check already used in Signup.tsx, so the same
+// "looks like an email" rule applies everywhere the app checks one.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**
  * Shared Title/Description/Category/Location/Date form used by both the
  * Create Lost Report and Create Found Report pages — they're identical
  * except for labels, the date field's name, and what happens on submit,
- * all of which the parent page controls via props.
+ * all of which the parent page controls via props. Also collects
+ * optional contact details (either flow) and, when
+ * `showCurrentLocation` is set, a pickup location (Found only).
  */
 function ReportForm({
   heading,
   subheading,
   dateLabel,
+  showCurrentLocation = false,
   submitLabel,
   submittingLabel,
   onSubmit,
@@ -66,6 +75,10 @@ function ReportForm({
   const [date, setDate] = useState('')
   const [images, setImages] = useState<ImageReference[]>([])
   const [isUploadingImages, setIsUploadingImages] = useState(false)
+  const [currentLocation, setCurrentLocation] = useState('')
+  const [contactName, setContactName] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
 
   const [errors, setErrors] = useState<ReportFormErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -76,6 +89,28 @@ function ReportForm({
   // prevents submitting a report before its images have finished
   // uploading (and prevents starting a second upload mid-submit).
   const isBusy = isSubmitting || isUploadingImages
+
+  // Phase 9: purely informational — never blocks or is checked at
+  // submit time. Just nudges toward a report that's easier to match
+  // and easier for someone else to act on.
+  const qualityChecks = [
+    { key: 'photo', label: 'Photo', met: images.length > 0 },
+    { key: 'description', label: 'Description', met: description.trim().length >= 20 },
+    { key: 'location', label: 'Location', met: location.trim().length > 0 },
+    {
+      key: 'contact',
+      label: 'Contact details',
+      met: Boolean(contactName.trim() || contactPhone.trim() || contactEmail.trim()),
+    },
+  ]
+  const metQualityChecks = qualityChecks.filter((check) => check.met).length
+  const qualityTier =
+    metQualityChecks === qualityChecks.length
+      ? 'Excellent'
+      : metQualityChecks >= 2
+        ? 'Good'
+        : 'Needs more information'
+  const missingQualityChecks = qualityChecks.filter((check) => !check.met)
 
   // Light frontend checks only — the backend remains the source of truth
   // for exact length/format rules.
@@ -96,6 +131,12 @@ function ReportForm({
     }
     if (!date) {
       nextErrors.date = `${dateLabel} is required.`
+    }
+    if (contactPhone.trim() && !PHONE_REGEX.test(contactPhone.trim())) {
+      nextErrors.contactPhone = 'Enter a valid phone number.'
+    }
+    if (contactEmail.trim() && !EMAIL_REGEX.test(contactEmail.trim())) {
+      nextErrors.contactEmail = 'Enter a valid email address.'
     }
 
     return nextErrors
@@ -124,6 +165,10 @@ function ReportForm({
         location: location.trim(),
         date,
         images,
+        currentLocation: currentLocation.trim(),
+        contactName: contactName.trim(),
+        contactPhone: contactPhone.trim(),
+        contactEmail: contactEmail.trim(),
       })
     } catch (error) {
       if (error instanceof ApiError) {
@@ -253,6 +298,106 @@ function ReportForm({
               {errors.date && (
                 <p className="form-error" id="report-date-error">
                   {errors.date}
+                </p>
+              )}
+            </div>
+
+            {showCurrentLocation && (
+              <div className="form-field">
+                <label htmlFor="report-current-location">Current Location</label>
+                <input
+                  id="report-current-location"
+                  type="text"
+                  value={currentLocation}
+                  onChange={(event) => setCurrentLocation(event.target.value)}
+                  placeholder="e.g. Library Reception, Block A Security Desk"
+                  disabled={isBusy}
+                />
+                <p className="form-hint">
+                  Where can someone pick this item up? The more specific, the easier it is to
+                  return.
+                </p>
+              </div>
+            )}
+
+            <fieldset className="report-form-contact">
+              <legend>Contact Information (optional)</legend>
+              <p className="form-hint">
+                Share how someone can reach you about this report. Provide a phone number, an
+                email address, or both.
+              </p>
+
+              <div className="form-field">
+                <label htmlFor="report-contact-name">Name</label>
+                <input
+                  id="report-contact-name"
+                  type="text"
+                  value={contactName}
+                  onChange={(event) => setContactName(event.target.value)}
+                  placeholder="e.g. Priya Sharma"
+                  disabled={isBusy}
+                />
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="report-contact-phone">Phone</label>
+                <input
+                  id="report-contact-phone"
+                  type="tel"
+                  value={contactPhone}
+                  onChange={(event) => setContactPhone(event.target.value)}
+                  aria-invalid={Boolean(errors.contactPhone)}
+                  aria-describedby={errors.contactPhone ? 'report-contact-phone-error' : undefined}
+                  placeholder="e.g. +91 98765 43210"
+                  disabled={isBusy}
+                />
+                {errors.contactPhone && (
+                  <p className="form-error" id="report-contact-phone-error">
+                    {errors.contactPhone}
+                  </p>
+                )}
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="report-contact-email">Email</label>
+                <input
+                  id="report-contact-email"
+                  type="email"
+                  value={contactEmail}
+                  onChange={(event) => setContactEmail(event.target.value)}
+                  aria-invalid={Boolean(errors.contactEmail)}
+                  aria-describedby={errors.contactEmail ? 'report-contact-email-error' : undefined}
+                  placeholder="e.g. priya@example.com"
+                  disabled={isBusy}
+                />
+                {errors.contactEmail && (
+                  <p className="form-error" id="report-contact-email-error">
+                    {errors.contactEmail}
+                  </p>
+                )}
+              </div>
+            </fieldset>
+
+            <div className="report-quality" aria-live="polite">
+              <div className="report-quality-head">
+                <span className="report-quality-title">Report Quality</span>
+                <span
+                  className={`report-quality-tier report-quality-tier-${metQualityChecks === qualityChecks.length ? 'excellent' : metQualityChecks >= 2 ? 'good' : 'low'}`}
+                >
+                  {qualityTier}
+                </span>
+              </div>
+              <ul className="report-quality-checklist">
+                {qualityChecks.map((check) => (
+                  <li key={check.key} className={check.met ? 'is-met' : 'is-missing'}>
+                    {check.met ? <CheckIcon /> : <span className="report-quality-dot" aria-hidden="true" />}
+                    {check.label}
+                  </li>
+                ))}
+              </ul>
+              {missingQualityChecks.length > 0 && (
+                <p className="report-quality-missing">
+                  Missing: {missingQualityChecks.map((check) => check.label).join(', ')}
                 </p>
               )}
             </div>

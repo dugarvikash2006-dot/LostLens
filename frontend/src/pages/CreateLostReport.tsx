@@ -14,6 +14,9 @@ function CreateLostReport() {
       location: values.location,
       dateLost: values.date,
       images: values.images,
+      contactName: values.contactName || undefined,
+      contactPhone: values.contactPhone || undefined,
+      contactEmail: values.contactEmail || undefined,
     })
     navigate('/my-reports')
   }

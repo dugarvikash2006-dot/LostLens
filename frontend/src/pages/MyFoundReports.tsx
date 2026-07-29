@@ -81,6 +81,11 @@ function MyFoundReports() {
             icon={<EmptyBoxIcon />}
             heading="No found reports yet"
             description="When you report something found, Lens Match starts checking it against open lost reports automatically."
+            action={
+              <Link to="/create-found" className="btn btn-primary">
+                Report a Found Item
+              </Link>
+            }
             headingLevel="h2"
           />
         )}

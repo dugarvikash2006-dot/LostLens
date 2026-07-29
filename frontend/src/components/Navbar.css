@@ -53,18 +53,6 @@
   border-bottom-color: var(--color-primary);
 }
 
-.navbar-link-disabled {
-  cursor: default;
-  /* No opacity reduction here — text-subtle is already the muted end of
-     the palette; compounding opacity on top previously pushed this
-     below WCAG AA (2.79:1). */
-  color: var(--color-text-subtle);
-}
-
-.navbar-link-disabled:hover {
-  color: var(--color-text-subtle);
-}
-
 .navbar-actions {
   display: flex;
   align-items: center;

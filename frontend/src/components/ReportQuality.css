@@ -1,0 +1,88 @@
+/* Phase 9 — informational only, never blocks submission. */
+
+.report-quality {
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.report-quality-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.report-quality-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.report-quality-tier {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-pill);
+}
+
+.report-quality-tier-excellent {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.report-quality-tier-good {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.report-quality-tier-low {
+  background-color: var(--color-lost-bg);
+  color: var(--color-lost);
+}
+
+.report-quality-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.report-quality-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  font-family: var(--font-sans);
+}
+
+.report-quality-checklist li.is-met {
+  color: var(--color-text);
+}
+
+.report-quality-checklist li.is-missing {
+  color: var(--color-text-subtle);
+}
+
+.report-quality-checklist svg {
+  width: 14px;
+  height: 14px;
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.report-quality-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-border-strong);
+  flex-shrink: 0;
+}
+
+.report-quality-missing {
+  margin-top: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--color-text-subtle);
+}
